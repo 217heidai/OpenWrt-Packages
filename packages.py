@@ -91,7 +91,7 @@ def CreatReadme(fileName, packageList):
         f.write("|软件|作者|功能|包类型|更新日期|\n")
         f.write("|:-|:-|:-|:-|:-|\n")
         for package in packageList:
-            f.write("|[%s](https://github.com/%s/%s)|%s|%s|%s|%s|\n"%(package.name, package.developer, package.name, package.developer, package.function, package.type, package.date))
+            f.write("|[%s](%s)|%s|%s|%s|%s|\n"%(package.name, package.repo[:-4], package.developer, package.function, package.type, package.date))
     
 
 
@@ -107,9 +107,9 @@ def Entry():
         package.update(tmp, pwd)
         if package.isUpdate:
             isUpdate = True
-    
+
     if isUpdate:
-        CreatReadme(pwd + '/README.md')
+        CreatReadme(pwd + '/README.md', packageList)
     
     if os.path.exists(tmp):
         shutil.rmtree(tmp)
