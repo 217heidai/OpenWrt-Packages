@@ -104,7 +104,7 @@ def Entry():
     # 删除所有目录，强制同步最新源码
     for entry in os.scandir(pwd):
         if entry.is_dir() and entry.path != pwd and not entry.name.startswith('.'):
-            dirList.append(entry.path)
+            shutil.rmtree(entry.path)
 
     isUpdate = False
     packageList = GetPackageList(pwd + '/README.md')
