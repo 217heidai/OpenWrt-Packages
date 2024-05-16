@@ -56,7 +56,7 @@ class PACKAGE(object):
             if self.type == 'multi':
                 dirList = self.__ListDir(tmp)
             else:
-                self.__RemoveDir()
+                self.__RemoveDir(tmp)
                 dirList.append(tmp)
             
             for dir in dirList:
