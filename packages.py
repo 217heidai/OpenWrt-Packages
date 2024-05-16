@@ -47,23 +47,19 @@ class PACKAGE(object):
         if os.path.exists(tmp):
             shutil.rmtree(tmp)
         
-        date = self.__Download(self.repo, tmp)
-
-        if date and date != self.date:
-            self.date = date
-            self.isUpdate = True
-            dirList = []
-            if self.type == 'multi':
-                dirList = self.__ListDir(tmp)
-            else:
-                self.__RemoveDir(tmp)
-                dirList.append(tmp)
-            
-            for dir in dirList:
-                package = path + dir[dir.rfind('/'):]
-                if os.path.exists(package):
-                    shutil.rmtree(package)
-                shutil.move(dir, path + '/')
+        self.date = self.__Download(self.repo, tmp)
+        dirList = []
+        if self.type == 'multi':
+            dirList = self.__ListDir(tmp)
+        else:
+            self.__RemoveDir(tmp)
+            dirList.append(tmp)
+        
+        for dir in dirList:
+            package = path + dir[dir.rfind('/'):]
+            if os.path.exists(package):
+                shutil.rmtree(package)
+            shutil.move(dir, path + '/')
 
 
 def GetPackageList(fileName):
@@ -106,15 +102,11 @@ def Entry():
         if entry.is_dir() and entry.path != pwd and not entry.name.startswith('.'):
             shutil.rmtree(entry.path)
 
-    isUpdate = False
     packageList = GetPackageList(pwd + '/README.md')
     for package in packageList:
         package.update(tmp, pwd)
-        if package.isUpdate:
-            isUpdate = True
 
-    if isUpdate:
-        CreatReadme(pwd + '/README.md', packageList)
+    CreatReadme(pwd + '/README.md', packageList)
     
     if os.path.exists(tmp):
         shutil.rmtree(tmp)
