@@ -8,4 +8,4 @@
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号查看|multi|20240512|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|single|20240428|
 |[luci-app-autotimeset](https://github.com/sirpdboy/luci-app-autotimeset)|sirpdboy|定时任务|single|20240410|
-|[istore](https://github.com/linkease/istore)|linkease|istore 应用市场|multi||
+|[istore](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20240407|
