@@ -50,6 +50,8 @@ class PACKAGE(object):
         self.date = self.__Download(self.repo, tmp)
         dirList = []
         if self.type == 'multi':
+            if self.name == 'istore': # 特殊处理
+                tmp += '/luci'
             dirList = self.__ListDir(tmp)
         else:
             self.__RemoveDir(tmp)
