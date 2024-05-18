@@ -10,7 +10,7 @@ env:
   TZ: Asia/Shanghai
 
 jobs:
-  Update_Filters:
+  Update_OpenWrt_Packages:
     runs-on: ubuntu-latest
 
     steps:
