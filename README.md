@@ -9,3 +9,6 @@
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|single|20240428|
 |[luci-app-autotimeset](https://github.com/sirpdboy/luci-app-autotimeset)|sirpdboy|定时任务|single|20240410|
 |[istore](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20240407|
+|[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi||
+|[luci-app-passwall2](https://github.com/xiaorouji/openwrt-passwall2)|xiaorouji|passwall2|multi||
+|[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall 依赖|multi||
