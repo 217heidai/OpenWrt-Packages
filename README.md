@@ -12,4 +12,5 @@
 |[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi|20240522|
 |[luci-app-passwall2](https://github.com/xiaorouji/openwrt-passwall2)|xiaorouji|passwall2|multi|20240428|
 |[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall 依赖|multi|20240522|
+|[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single||
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20240519|
