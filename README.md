@@ -4,8 +4,8 @@
 |软件|作者|功能|包类型|更新日期|
 |:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20240508|
-|[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20240522|
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20240519|
+|[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20240522|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|single|20240428|
 |[luci-app-autotimeset](https://github.com/sirpdboy/luci-app-autotimeset)|sirpdboy|定时任务|single|20240410|
 |[luci-app-modem](https://github.com/Siriling/5G-Modem-Support)|Siriling|4G/5G Modem 拨号|multi|20240514|
