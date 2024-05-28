@@ -8,6 +8,10 @@
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20240522|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|single|20240428|
 |[luci-app-autotimeset](https://github.com/sirpdboy/luci-app-autotimeset)|sirpdboy|定时任务|single|20240410|
+|[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|rufengsuixing|adguardhome|single||
+|[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|pymumu|smartdns|single||
+|[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|sbwml|mosdns|multi||
+|[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|sbwml|mosdns 依赖|single||
 |[luci-app-modem](https://github.com/Siriling/5G-Modem-Support)|Siriling|4G/5G Modem 拨号|multi|20240514|
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 基站绑定|multi|20240519|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号查看|multi|20240519|
