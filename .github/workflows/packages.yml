@@ -32,12 +32,11 @@ jobs:
         run: |
           python packages.py
           rm -rf __pycache__
-          echo "COMMIT_MSG=$(Updated at $(date))" >> $GITHUB_ENV
 
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: ${{env.COMMIT_MSG}}
+          commit_message: $(Updated at $(date))
           
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@main
