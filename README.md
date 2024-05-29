@@ -13,7 +13,7 @@
 |[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|sbwml|mosdns|multi|20240415|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|sbwml|mosdns 依赖|single|20230825|
 |[luci-app-modem](https://github.com/Siriling/5G-Modem-Support)|Siriling|4G/5G Modem 拨号|multi|20240514|
-|[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 基站绑定|multi|20240519|
+|[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 基站绑定|multi||
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号查看|multi||
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|4IceG|sms-tool 短信插件|multi|20240522|
 |[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi|20240527|

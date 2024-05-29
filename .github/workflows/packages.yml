@@ -33,7 +33,7 @@ jobs:
         run: |
           python packages.py
           rm -rf __pycache__
-          echo "message=$(Updated at $(date))" >> $GITHUB_OUTPUT
+          echo "message=$(date)" >> $GITHUB_OUTPUT
 
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5
