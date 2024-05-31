@@ -18,13 +18,22 @@ class PACKAGE(object):
         self.isUpdate = False
 
     def __Download(self, repo, path):
+        def gitlog(log):
+            if log:
+                l = log.split('\n')
+            for item in l:
+                if item.startswith('Date:'):
+                    return item[item.rfind(" ") + 1: ]
+            return None
         try:
+            print('\n', repo)
             if os.path.exists(path):
                 shutil.rmtree(path)
             repo = Repo.clone_from(repo, path)
-            commit_dict = json.loads(repo.git.log('--pretty=format:{"commit":"%h", "date":"%cd", "summary":"%s"}', date='format:%Y%m%d', max_count=1))
-            print(commit_dict)
-            return commit_dict['date']
+            log = repo.git.log(date='format:%Y%m%d', max_count=1)
+            print(log)
+            commint_date = gitlog(log)
+            return commint_date
         except Exception as e:
             print("%s.%s: %s" % (self.__class__.__name__, sys._getframe().f_code.co_name, e))
             return None
