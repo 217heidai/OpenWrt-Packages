@@ -27,7 +27,7 @@ LUCI_DEPENDS:=+luci-compat \
 		+modemmanager \
 		+luci-proto-modemmanager \
 		+sms-tool \
-		+bc +jq
+		+jq
 
 define Package/luci-app-modem/conffiles
 /etc/config/modem

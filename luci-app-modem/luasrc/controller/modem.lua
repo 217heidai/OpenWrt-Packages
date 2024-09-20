@@ -34,7 +34,6 @@ function index()
 	entry({"admin", "network", "modem", "set_mode"}, call("setMode"), nil).leaf = true
 	entry({"admin", "network", "modem", "get_network_prefer_info"}, call("getNetworkPreferInfo"), nil).leaf = true
 	entry({"admin", "network", "modem", "set_network_prefer"}, call("setNetworkPrefer"), nil).leaf = true
-	entry({"admin", "network", "modem", "set_band_prefer"}, call("setBandPrefer"), nil).leaf = true
 	entry({"admin", "network", "modem", "get_self_test_info"}, call("getSelfTestInfo"), nil).leaf = true
 	entry({"admin", "network", "modem", "get_quick_commands"}, call("getQuickCommands"), nil).leaf = true
 	entry({"admin", "network", "modem", "send_at_command"}, call("sendATCommand"), nil).leaf = true
@@ -588,24 +587,14 @@ end
 function getNetworkPreferInfo()
 	local at_port = http.formvalue("port")
 	
-	--获取制造商，数据接口，模组名称
-	local manufacturer
-	local data_interface
-	local name
-	uci:foreach("modem", "modem-device", function (modem_device)
-		if at_port == modem_device["at_port"] then
-			manufacturer=modem_device["manufacturer"]
-			data_interface=modem_device["data_interface"]
-			name=modem_device["name"]
-			return true --跳出循环
-		end
-	end)
+	--获取制造商
+	local manufacturer=getManufacturer(at_port)
 
 	--获取值
 	local network_prefer_info
 	if manufacturer~="unknown" then
 		--获取模组网络偏好
-		local command="source "..script_path..manufacturer..".sh && "..manufacturer.."_get_network_prefer "..at_port.." "..data_interface.." "..name
+		local command="source "..script_path..manufacturer..".sh && "..manufacturer.."_get_network_prefer "..at_port
 		local result=shell(command)
 		network_prefer_info=json.parse(result)
 	end
@@ -626,18 +615,8 @@ function setNetworkPrefer()
     local at_port = http.formvalue("port")
 	local network_prefer_config = json.stringify(http.formvalue("prefer_config"))
 
-	--获取制造商，数据接口，模组名称
-	local manufacturer
-	local data_interface
-	local name
-	uci:foreach("modem", "modem-device", function (modem_device)
-		if at_port == modem_device["at_port"] then
-			manufacturer=modem_device["manufacturer"]
-			data_interface=modem_device["data_interface"]
-			name=modem_device["name"]
-			return true --跳出循环
-		end
-	end)
+	--获取制造商
+	local manufacturer=getManufacturer(at_port)
 
 	--设置模组网络偏好
 	local command="source "..script_path..manufacturer..".sh && "..manufacturer.."_set_network_prefer "..at_port.." "..network_prefer_config
@@ -645,48 +624,11 @@ function setNetworkPrefer()
 
 	--获取设置好后的模组网络偏好
 	local network_prefer={}
-	-- if at_port and manufacturer and manufacturer~="unknown" then
-	-- 	local command="source "..script_path..manufacturer..".sh && "..manufacturer.."_get_network_prefer "..at_port.." "..data_interface.." "..name
-	-- 	local result=shell(command)
-	-- 	network_prefer=json.parse(result)
-	-- end
-
-	-- 写入Web界面
-	luci.http.prepare_content("application/json")
-	luci.http.write_json(network_prefer)
-end
-
---[[
-@Description 设置频段偏好
-]]
-function setBandPrefer()
-    local at_port = http.formvalue("port")
-	local network_prefer_config = json.stringify(http.formvalue("prefer_config"))
-
-	--获取制造商，数据接口，模组名称
-	local manufacturer
-	local data_interface
-	local name
-	uci:foreach("modem", "modem-device", function (modem_device)
-		if at_port == modem_device["at_port"] then
-			manufacturer=modem_device["manufacturer"]
-			data_interface=modem_device["data_interface"]
-			name=modem_device["name"]
-			return true --跳出循环
-		end
-	end)
-
-	--设置模组网络偏好
-	local command="source "..script_path..manufacturer..".sh && "..manufacturer.."_set_band_prefer "..at_port.." "..network_prefer_config
-	shell(command)
-
-	--获取设置好后的模组网络偏好
-	local network_prefer={}
-	-- if at_port and manufacturer and manufacturer~="unknown" then
-	-- 	local command="source "..script_path..manufacturer..".sh && "..manufacturer.."_get_network_prefer "..at_port.." "..data_interface.." "..name
-	-- 	local result=shell(command)
-	-- 	network_prefer=json.parse(result)
-	-- end
+	if at_port and manufacturer and manufacturer~="unknown" then
+		local command="source "..script_path..manufacturer..".sh && "..manufacturer.."_get_network_prefer "..at_port
+		local result=shell(command)
+		network_prefer=json.parse(result)
+	end
 
 	-- 写入Web界面
 	luci.http.prepare_content("application/json")
