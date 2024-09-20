@@ -30,6 +30,8 @@ class PACKAGE(object):
             if os.path.exists(path):
                 shutil.rmtree(path)
             repo = Repo.clone_from(repo, path)
+            if repo.find("5G-Modem-Support") > 0:
+                repo.git.checkout("819f697")
             log = repo.git.log(date='format:%Y%m%d', max_count=1)
             print(log)
             commint_date = gitlog(log)
