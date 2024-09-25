@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018, 2020 Jeffery To
+# Copyright (C) 2018-2023 Jeffery To
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -30,7 +30,7 @@ PKG_CPE_ID:=cpe:/a:golang:go
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_DIR:=$(BUILD_DIR)/go-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 PKG_GO_PREFIX:=/usr
 PKG_GO_VERSION_ID:=$(GO_VERSION_MAJOR_MINOR)
@@ -58,19 +58,20 @@ HOST_GO_VALID_OS_ARCH:= \
   \
   dragonfly_amd64 \
   illumos_amd64 \
-  freebsd_riscv64 \
   solaris_amd64 \
   \
   aix_ppc64 \
   js_wasm \
   wasip1_wasm \
   \
+  freebsd_riscv64 \
+  openbsd_riscv64 \
+  \
   linux_ppc64 linux_ppc64le \
   linux_mips linux_mipsle linux_mips64 linux_mips64le \
-  linux_riscv64 linux_s390x \
-  linux_loong64 \
+  linux_loong64 linux_riscv64 linux_s390x \
   \
-  openbsd_ppc64 openbsd_riscv64
+  openbsd_mips64
 
 ifeq ($(HOST_ARCH),x86_64)
 	PKG_ARCH:=amd64
