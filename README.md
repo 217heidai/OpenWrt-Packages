@@ -4,7 +4,7 @@
 |软件|作者|功能|包类型|更新日期|
 |:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20250205|
-|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20250207|
+|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20250210|
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20250122|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|single|20240428|
 |[luci-app-autotimeset](https://github.com/sirpdboy/luci-app-autotimeset)|sirpdboy|定时任务|single|20250116|
@@ -18,4 +18,4 @@
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|4IceG|sms-tool 短信插件|multi|20241111|
 |[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi|20250209|
 |[luci-app-passwall2](https://github.com/xiaorouji/openwrt-passwall2)|xiaorouji|passwall2|multi|20250209|
-|[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall 依赖|multi|20250209|
+|[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall 依赖|multi|20250210|
