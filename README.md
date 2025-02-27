@@ -20,3 +20,4 @@
 |[luci-app-passwall2](https://github.com/xiaorouji/openwrt-passwall2)|xiaorouji|passwall2|multi|20250226|
 |[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall、passwall2 依赖|multi|20250224|
 |[luci-app-wrtbwmon](https://github.com/brvphoenix/luci-app-wrtbwmon)|brvphoenix|在线设备流量监控|multi|20240217|
+|[wrtbwmon](https://github.com/brvphoenix/wrtbwmon)|brvphoenix|wrtbwmon 依赖|multi||
