@@ -6,7 +6,7 @@
 |[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20250305|
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20250210|
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20250320|
-|[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|single|20250317|
+|[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|single|20250321|
 |[luci-app-autotimeset](https://github.com/sirpdboy/luci-app-autotimeset)|sirpdboy|定时任务|single|20250116|
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|rufengsuixing|adguardhome|single|20200113|
 |[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|pymumu|smartdns|single|20250220|
