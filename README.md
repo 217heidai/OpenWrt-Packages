@@ -16,8 +16,8 @@
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 基站绑定|multi|20250319|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号查看|multi|20250211|
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|4IceG|sms-tool 短信插件|multi|20241111|
-|[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi|20250321|
+|[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi|20250322|
 |[luci-app-passwall2](https://github.com/xiaorouji/openwrt-passwall2)|xiaorouji|passwall2|multi|20250303|
-|[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall、passwall2 依赖|multi|20250320|
+|[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall、passwall2 依赖|multi|20250322|
 |[luci-app-wrtbwmon](https://github.com/brvphoenix/luci-app-wrtbwmon)|brvphoenix|在线设备流量监控|multi|20240217|
 |[wrtbwmon](https://github.com/brvphoenix/wrtbwmon)|brvphoenix|wrtbwmon 依赖|multi|20201201|
