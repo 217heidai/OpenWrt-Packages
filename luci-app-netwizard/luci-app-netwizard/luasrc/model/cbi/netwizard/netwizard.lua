@@ -1,5 +1,5 @@
 -- Copyright 2019 X-WRT <dev@x-wrt.com>
--- Copyright 2022 sirpdboy
+-- Copyright 2025 sirpdboy
 
 local net = require "luci.model.network".init()
 local sys = require "luci.sys"
@@ -10,8 +10,18 @@ local lan_gateway = uci:get("netwizard", "default", "lan_gateway")
 if lan_gateway ~= "" then
    lan_gateway = sys.exec("ipaddr=`uci -q get network.lan.ipaddr`;echo ${ipaddr%.*}")
 end
+
 local lan_ip = uci:get("network", "lan", "ipaddr")
-local wan_face = sys.exec(" [ `uci -q get network.wan.ifname` ] && uci -q get network.wan.ifname  || uci -q get network.wan.device ")
+local landhcp =  uci:get("network", "lan", "lan_dhcp")
+if landhcp ~= "" then
+   landhcp = uci:get("dhcp", "lan", "ignore")
+end 
+
+local wan_face = uci:get("netwizard", "default", "wan_interface")
+if wan_face ~= "" then
+   wan_face = sys.exec(" [ `uci -q get network.wan.device` ] && uci -q get network.wan.device  || uci -q get network.wan.ifname ")
+end
+
 local wanproto = uci:get("netwizard", "default", "wan_proto")
 if wanproto == "" then
      wanproto = sys.exec("uci -q get network.wan.proto || echo 'siderouter'")
@@ -46,9 +56,6 @@ e:value("255.255.255.0")
 e:value("255.255.0.0")
 e:value("255.0.0.0")
 e.default = '255.255.255.0'
-
-e = s:taboption("wansetup", Flag, "ipv6",translate('Enable IPv6'))
-e.default = "0"
 
 wan_proto = s:taboption("wansetup", ListValue, "wan_proto", translate("Network protocol mode selection"), translate("Four different ways to access the Internet, please choose according to your own situation.</br>"))
 wan_proto.default = wanproto
@@ -96,6 +103,7 @@ wan_netmask:value("255.255.0.0")
 wan_netmask:value("255.0.0.0")
 wan_netmask.default = "255.255.255.0"
 
+
 wan_gateway = s:taboption("wansetup", Value, "wan_gateway", translate("Wan IPv4 gateway"))
 wan_gateway:depends({wan_proto="static"})
 wan_gateway.datatype = "ip4addr"
@@ -126,15 +134,18 @@ lan_dns:depends({wan_proto="siderouter"})
 lan_dns.datatype = "ip4addr"
 lan_dns.default = "223.5.5.5"
 
+e = s:taboption("wansetup", Flag, "ipv6",translate('Enable IPv6'))
+e.default = "0"
+
 lan_dhcp = s:taboption("wansetup", Flag, "lan_dhcp", translate("Disable DHCP Server"), translate("Selecting means that the DHCP server is not enabled. In a network, only one DHCP server is needed to allocate and manage client IPs. If it is a secondary route, it is recommended to turn off the primary routing DHCP server."))
-lan_dhcp.default = 0
+lan_dhcp.default = landhcp
 lan_dhcp.anonymous = false
 
-e = s:taboption("wansetup", Flag, "dnsset", translate("Enable DNS notifications (ipv4/ipv6)"),translate("Force the DNS server in the DHCP server to be specified as the IP for this route"))
+e = s:taboption("wansetup", Flag, "dnsset", translate("Enable DNS notifications (ipv4/ipv6)"),translate("Forcefully specify the DNS server for this router"))
 e:depends("lan_dhcp", false)
 e.default = "0"
 
-e = s:taboption("wansetup", Value, "dns_tables", translate(" "))
+e = s:taboption("wansetup", Value, "dns_tables", translate("DNS"))
 e:value("1", translate("Use local IP for DNS (default)"))
 e:value("223.5.5.5", translate("Ali DNS:223.5.5.5"))
 e:value("180.76.76.76", translate("Baidu dns:180.76.76.76"))
@@ -143,24 +154,6 @@ e:value("8.8.8.8", translate("Google DNS:8.8.8.8"))
 e:value("1.1.1.1", translate("Cloudflare DNS:1.1.1.1"))
 e.anonymous = false
 e:depends("dnsset", true)
-
-lan_snat = s:taboption("wansetup", Flag, "lan_snat", translate("Custom firewall"),translate("Bypass firewall settings, when Xiaomi or Huawei are used as the main router, the WIFI signal cannot be used normally"))
-lan_snat:depends({wan_proto="siderouter"})
-lan_snat.anonymous = false
-
-e = s:taboption("wansetup", Value, "snat_tables", translate(" "))
-e:value("iptables -t nat -I POSTROUTING -o br-lan -j MASQUERADE")
-e:value("iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE")
-e:value("iptables -t nat -I POSTROUTING -o eth1 -j MASQUERADE")
-e.default = "iptables -t nat -I POSTROUTING -o br-lan -j MASQUERADE"
-e.anonymous = false
-e:depends("lan_snat", true)
-
-redirectdns = s:taboption("wansetup", Flag, "redirectdns", translate("Custom firewall"),translate("Use iptables to force all TCP/UDP DNS 53ports in IPV4/IPV6 to be forwarded from this route[Suggest opening]"))
-redirectdns:depends({wan_proto="dhcp"})
-redirectdns:depends({wan_proto="static"})
-redirectdns:depends({wan_proto="pppoe"})
-redirectdns.anonymous = false
 
 masq = s:taboption("wansetup", Flag, "masq", translate("Enable IP dynamic camouflage"),translate("Enable IP dynamic camouflage when the side routing network is not ideal"))
 masq:depends({wan_proto="siderouter"})
