@@ -24,4 +24,4 @@
 |[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi|20250602|
 |[luci-app-passwall2](https://github.com/xiaorouji/openwrt-passwall2)|xiaorouji|passwall2|multi|20250514|
 |[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall、passwall2 依赖|multi|20250531|
-|[luci-app-gecoosac](https://github.com/lwb1978/openwrt-gecoosac)|lwb1978|集客 AC|multi||
+|[luci-app-gecoosac](https://github.com/lwb1978/openwrt-gecoosac)|lwb1978|集客 AC|multi|20250407|
