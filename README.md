@@ -7,7 +7,7 @@
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20250811|
 |[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|jerrykuku|argon 主题配置插件|single|20250718|
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20250625|
-|[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20250619|
+|[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20250813|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|multi|20250810|
 |[luci-app-taskplan](https://github.com/sirpdboy/luci-app-taskplan)|sirpdboy|定时任务|multi|20250810|
 |[luci-app-eqosplus](https://github.com/sirpdboy/luci-app-eqosplus)|sirpdboy|定时限速|single|20250810|
@@ -18,11 +18,11 @@
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|pymumu|smartdns|single|20250811|
 |[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|sbwml|mosdns|multi|20250704|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|sbwml|mosdns 依赖|single|20250125|
-|[luci-app-modem](https://github.com/Siriling/5G-Modem-Support)|Siriling|4G/5G Modem 拨号|multi|20250810|
+|[luci-app-modem](https://github.com/Siriling/5G-Modem-Support)|Siriling|4G/5G Modem 拨号|multi|20250813|
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 频段锁定|multi|20250528|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号展示|multi|20250812|
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|4IceG|短信收发|multi|20250609|
 |[luci-app-passwall](https://github.com/xiaorouji/openwrt-passwall)|xiaorouji|passwall|multi|20250812|
 |[luci-app-passwall2](https://github.com/xiaorouji/openwrt-passwall2)|xiaorouji|passwall2|multi|20250809|
-|[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall、passwall2 依赖|multi|20250812|
+|[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall、passwall2 依赖|multi|20250813|
 |[luci-app-gecoosac](https://github.com/lwb1978/openwrt-gecoosac)|lwb1978|集客 AC|multi|20250407|
