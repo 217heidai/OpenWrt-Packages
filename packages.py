@@ -44,7 +44,7 @@ class PACKAGE(object):
     def __ListDir(self, path):
         dirList = []
         for entry in os.scandir(path):
-            if entry.is_dir() and entry.path != path and not entry.name.startswith('.') and entry.name not in ['doc']:
+            if entry.is_dir() and entry.path != path and not entry.name.startswith('.') and entry.name not in ['doc', 'previews']:
                 dirList.append(entry.path)
         return dirList
 
