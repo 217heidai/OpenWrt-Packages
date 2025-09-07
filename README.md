@@ -12,7 +12,7 @@
 |[luci-app-taskplan](https://github.com/sirpdboy/luci-app-taskplan)|sirpdboy|定时任务|multi|20250810|
 |[luci-app-eqosplus](https://github.com/sirpdboy/luci-app-eqosplus)|sirpdboy|定时限速|single|20250810|
 |[luci-app-parentcontrol](https://github.com/sirpdboy/luci-app-parentcontrol)|sirpdboy|家长控制|single|20250514|
-|[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|sirpdboy|ddns|multi|20250810|
+|[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|sirpdboy|ddns|multi|20250906|
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|rufengsuixing|adguardhome|single|20200113|
 |[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|pymumu|smartdns luci 界面|single|20250803|
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|pymumu|smartdns|single|20250902|
