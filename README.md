@@ -27,4 +27,4 @@
 |[passwall-packages](https://github.com/xiaorouji/openwrt-passwall-packages)|xiaorouji|passwall、passwall2 依赖|multi|20251027|
 |[luci-app-gecoosac](https://github.com/lwb1978/openwrt-gecoosac)|lwb1978|集客 AC|multi|20251023|
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|gdy666|lucky 插件|multi|20251016|
-|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20250926|
+|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20251030|
