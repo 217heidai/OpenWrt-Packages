@@ -14,7 +14,7 @@
 |[luci-app-parentcontrol](https://github.com/sirpdboy/luci-app-parentcontrol)|sirpdboy|家长控制|single|20250514|
 |[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|sirpdboy|ddns|multi|20251107|
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|rufengsuixing|adguardhome|single|20200113|
-|[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|pymumu|smartdns luci 界面|single|20251105|
+|[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|pymumu|smartdns luci 界面|single|20251113|
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|pymumu|smartdns|single|20251022|
 |[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|sbwml|mosdns|multi|20250920|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|sbwml|mosdns 依赖|single|20250125|
