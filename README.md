@@ -10,7 +10,7 @@
 |[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20251107|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|multi|20251030|
 |[luci-app-taskplan](https://github.com/sirpdboy/luci-app-taskplan)|sirpdboy|定时任务|multi|20251023|
-|[luci-app-eqosplus](https://github.com/sirpdboy/luci-app-eqosplus)|sirpdboy|定时限速|single|20250810|
+|[luci-app-eqosplus](https://github.com/sirpdboy/luci-app-eqosplus)|sirpdboy|定时限速|single|20251129|
 |[luci-app-parentcontrol](https://github.com/sirpdboy/luci-app-parentcontrol)|sirpdboy|家长控制|single|20250514|
 |[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|sirpdboy|ddns|multi|20251122|
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|rufengsuixing|adguardhome|single|20200113|
