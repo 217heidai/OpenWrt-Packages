@@ -18,7 +18,7 @@ LUCI_DEPENDS:=+luci-compat +kmod-usb-net  +kmod-usb-net-cdc-ether +kmod-usb-acm 
 		+luci-proto-qmi \
 		+pciutils \
 		+kmod-pcie_mhi \
-		+quectel-cm \
+		+quectel-CM-5G \
 		+grep \
 
 include $(TOPDIR)/feeds/luci/luci.mk
