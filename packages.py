@@ -31,8 +31,10 @@ class PACKAGE(object):
             repository = Repo.clone_from(repo, path)
             if self.name == "golang": # 切换 go 版本
                 repository.git.checkout("25.x")
+            '''
             if self.name == "luci-app-modem": # 新版无法编译，暂时回退，待作者更新
                 repository.git.checkout("f0380e8bbca2a41bf8978fa2c9ce114d09381cbf")
+            '''
             log = repository.git.log(date='format:%Y%m%d', max_count=1)
             print(log)
             commint_date = gitlog(log)
@@ -74,6 +76,10 @@ class PACKAGE(object):
             if os.path.exists(package):
                 shutil.rmtree(package)
             shutil.move(dir, path + '/')
+        
+        # 重命名 quectel_cm_5G，解决编译问题
+        if os.path.exists(path + '/quectel_cm_5G'):
+            os.rename(path + '/quectel_cm_5G', path + '/quectel_cm')
 
 
 def GetPackageList(fileName):
