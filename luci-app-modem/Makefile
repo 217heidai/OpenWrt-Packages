@@ -22,7 +22,7 @@ LUCI_DEPENDS:=+luci-compat \
 		+usbutils \
 		+kmod-pcie_mhi \
 		+pciutils \
-		+quectel-cm \
+		+quectel-CM-5G \
 		+sms-tool \
 		+ndisc6 +rdisc6 \
 		+bc +jq
