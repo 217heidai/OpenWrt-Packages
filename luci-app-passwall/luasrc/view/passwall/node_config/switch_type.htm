@@ -1,5 +1,5 @@
 <%
-local api = require "luci.passwall2.api"
+local api = require "luci.passwall.api"
 -%>
 <div class="cbi-value" id="cbi-<%=self.config.."-"..section.."-"..self.option%>" data-index="<%=self.index%>" data-depends="<%=pcdata(self:deplist2json(section))%>">
 	<label class="cbi-value-title">
@@ -15,7 +15,7 @@ local api = require "luci.passwall2.api"
 <script>
 	function getOption(opt) {
 		var obj;
-		var id = 'cbid.passwall2.<%=section%>.' + opt;
+		var id = 'cbid.passwall.<%=section%>.' + opt;
 		obj = document.getElementsByName(id)[0] || document.getElementById(id);
 		if (obj) {
 			var combobox = document.getElementById('cbi.combobox.' + id);
