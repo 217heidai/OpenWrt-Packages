@@ -23,7 +23,7 @@ s.dynamic = false
 
 o = s:option(DummyValue, "passwall2", " ")
 o.rawhtml  = true
-o.template = "passwall2/node_list/link_share_man"
+o.template = "passwall2/node_config/link_share_man"
 o.value = arg[1]
 
 o = s:option(Value, "remarks", translate("Node Remarks"))
