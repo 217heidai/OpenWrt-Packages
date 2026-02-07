@@ -7,7 +7,7 @@
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20260203|
 |[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|jerrykuku|argon 主题配置插件|single|20250718|
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20251218|
-|[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20260124|
+|[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20260207|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|multi|20260114|
 |[luci-app-taskplan](https://github.com/sirpdboy/luci-app-taskplan)|sirpdboy|定时任务|multi|20251023|
 |[luci-app-eqosplus](https://github.com/sirpdboy/luci-app-eqosplus)|sirpdboy|定时限速|single|20251130|
