@@ -1,6 +1,12 @@
 # OpenWrt-Packages
 常用 OpenWrt 软件包收集
 
+## 注意事项
+
+1. 编译 OpenWrt 25.12 版本，需要打入`patch/pcie_mhi.path`补丁，修复 6.12.x 内核下 pcie_mhi 编译问题。
+
+## 软件清单
+
 |软件|作者|功能|包类型|更新日期|
 |:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20260207|
