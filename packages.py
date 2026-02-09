@@ -108,7 +108,7 @@ def CreatReadme(fileName, packageList):
         f.write("\n")
         f.write("## 注意事项\n")
         f.write("\n")
-        f.write("1. 编译 OpenWrt 25.12 版本，需要打入`patch/pcie_mhi.path`补丁，修复 6.12.x 内核下 pcie_mhi 编译问题。\n")
+        f.write("1. 编译 OpenWrt 25.12 版本，需要打入`patch/pcie_mhi.patch`补丁，修复 6.12.x 内核下 pcie_mhi 编译问题。\n")
         f.write("\n")
         f.write("## 软件清单\n")
         f.write("\n")
@@ -127,7 +127,7 @@ def Entry():
 
     # 删除所有目录，强制同步最新源码
     for entry in os.scandir(pwd):
-        if entry.is_dir() and entry.path != pwd and not entry.name.startswith('.'):
+        if entry.is_dir() and entry.path != pwd and entry.name not in ('.git', '.github', 'patch'):
             shutil.rmtree(entry.path)
 
     packageList = GetPackageList(pwd + '/README.md')
