@@ -106,6 +106,12 @@ def CreatReadme(fileName, packageList):
         f.write("# OpenWrt-Packages\n")
         f.write("常用 OpenWrt 软件包收集\n")
         f.write("\n")
+        f.write("## 注意事项\n")
+        f.write("\n")
+        f.write("1. 编译 OpenWrt 25.12 版本，需要打入`patch/pcie_mhi.path`补丁，修复 6.12.x 内核下 pcie_mhi 编译问题。\n")
+        f.write("\n")
+        f.write("## 软件清单\n")
+        f.write("\n")
         f.write("|软件|作者|功能|包类型|更新日期|\n")
         f.write("|:-|:-|:-|:-|:-|\n")
         for package in packageList:
