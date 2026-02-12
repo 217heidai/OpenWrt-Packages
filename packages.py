@@ -32,7 +32,7 @@ class PACKAGE(object):
             
             # 特殊处理
             if self.name == "golang": # 切换 go 版本
-                repository.git.checkout("25.x")
+                repository.git.checkout("26.x")
             if self.name == "luci-app-modem": # 新版无法编译，暂时回退，待作者更新
                 repository.git.checkout("f0380e8bbca2a41bf8978fa2c9ce114d09381cbf")
             
