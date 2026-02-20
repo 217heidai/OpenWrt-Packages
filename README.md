@@ -11,7 +11,7 @@
 |:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20260211|
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20260203|
-|[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|jerrykuku|argon 主题配置插件|single|20250718|
+|[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|jerrykuku|argon 主题配置插件|single|20260220|
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20251218|
 |[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20260207|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|multi|20260114|
@@ -28,8 +28,8 @@
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 频段锁定|multi|20260215|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号展示|multi|20251228|
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|4IceG|短信收发|multi|20260218|
-|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|Openwrt-Passwall|passwall|multi|20260218|
-|[luci-app-passwall2](https://github.com/Openwrt-Passwall/openwrt-passwall2)|Openwrt-Passwall|passwall2|multi|20260218|
+|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|Openwrt-Passwall|passwall|multi|20260220|
+|[luci-app-passwall2](https://github.com/Openwrt-Passwall/openwrt-passwall2)|Openwrt-Passwall|passwall2|multi|20260220|
 |[passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)|Openwrt-Passwall|passwall、passwall2 依赖|multi|20260219|
 |[luci-app-gecoosac](https://github.com/lwb1978/openwrt-gecoosac)|lwb1978|集客 AC|multi|20251023|
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|gdy666|lucky 插件|multi|20260215|
