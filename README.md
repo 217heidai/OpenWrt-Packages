@@ -18,7 +18,7 @@
 |[luci-app-taskplan](https://github.com/sirpdboy/luci-app-taskplan)|sirpdboy|定时任务|multi|20251023|
 |[luci-app-eqosplus](https://github.com/sirpdboy/luci-app-eqosplus)|sirpdboy|定时限速|single|20251130|
 |[luci-app-parentcontrol](https://github.com/sirpdboy/luci-app-parentcontrol)|sirpdboy|家长控制|single|20250514|
-|[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|sirpdboy|ddns|multi|20260228|
+|[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|sirpdboy|ddns|multi|20260301|
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|rufengsuixing|adguardhome|single|20200113|
 |[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|pymumu|smartdns luci 界面|single|20251219|
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|pymumu|smartdns|single|20260129|
@@ -33,4 +33,4 @@
 |[passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)|Openwrt-Passwall|passwall、passwall2 依赖|multi|20260228|
 |[luci-app-gecoosac](https://github.com/lwb1978/openwrt-gecoosac)|lwb1978|集客 AC|multi|20251023|
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|gdy666|lucky 插件|multi|20260215|
-|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20260131|
+|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20260301|
