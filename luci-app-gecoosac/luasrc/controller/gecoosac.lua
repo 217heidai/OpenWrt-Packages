@@ -5,6 +5,7 @@ function index()
 	if not nixio.fs.access("/etc/config/gecoosac") then
 		return
 	end
+	local page
 	page = entry({"admin", "services", "gecoosac"}, cbi("gecoosac"), _("Gecoos AC"), 100)
 	page.dependent = true
 	page = entry({"admin", "services", "gecoosac", "status"}, call("act_status"))
