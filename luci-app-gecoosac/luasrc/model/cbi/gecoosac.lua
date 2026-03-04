@@ -6,9 +6,9 @@ function program_exists(program)
 end
 
 if program_exists("/usr/bin/gecoosac") then
-	m = Map("gecoosac", translate("Gecoos AC"), translate("Batch management Gecoos AP,Default password:admin") .. "<br>" .. translatef("The current AC version %s, only supports AP 7.6 and above.","2.x"))
+	m = Map("gecoosac", translate("Gecoos AC"), translate("Batch management Gecoos AP, Default password: admin") .. "<br>" .. translatef("The current AC version %s, only supports AP 7.6 and above.","2.2"))
 else
-	m = Map("gecoosac", translate("Gecoos AC"), translate("Batch management Gecoos AP,Default password:admin") .. "<br>" .. translate("The AC program does not exist, please check."))
+	m = Map("gecoosac", translate("Gecoos AC"), translate("Batch management Gecoos AP, Default password: admin") .. "<br>" .. translate("The AC program does not exist, please check."))
 end
 
 m:section(SimpleSection).template  = "gecoosac/gecoosac_status"
