@@ -15,7 +15,7 @@
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20251218|
 |[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20260305|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|sirpdboy|分区管理|multi|20260305|
-|[luci-app-taskplan](https://github.com/sirpdboy/luci-app-taskplan)|sirpdboy|定时任务|multi|20260307|
+|[luci-app-taskplan](https://github.com/sirpdboy/luci-app-taskplan)|sirpdboy|定时任务|multi|20260309|
 |[luci-app-eqosplus](https://github.com/sirpdboy/luci-app-eqosplus)|sirpdboy|定时限速|single|20260304|
 |[luci-app-parentcontrol](https://github.com/sirpdboy/luci-app-parentcontrol)|sirpdboy|家长控制|single|20260304|
 |[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|sirpdboy|ddns|multi|20260305|
@@ -28,7 +28,7 @@
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 频段锁定|multi|20260224|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号展示|multi|20251228|
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|4IceG|短信收发|multi|20260224|
-|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|Openwrt-Passwall|passwall|multi|20260308|
+|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|Openwrt-Passwall|passwall|multi|20260309|
 |[luci-app-passwall2](https://github.com/Openwrt-Passwall/openwrt-passwall2)|Openwrt-Passwall|passwall2|multi|20260308|
 |[passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)|Openwrt-Passwall|passwall、passwall2 依赖|multi|20260307|
 |[luci-app-gecoosac](https://github.com/laipeng668/luci-app-gecoosac)|laipeng668|集客 AC|multi|20260304|
