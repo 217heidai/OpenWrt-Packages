@@ -10,7 +10,7 @@
 |软件|作者|功能|包类型|更新日期|
 |:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20260408|
-|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20260413|
+|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20260416|
 |[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|jerrykuku|argon 主题配置插件|single|20260413|
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20251218|
 |[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20260312|
@@ -33,4 +33,4 @@
 |[passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)|Openwrt-Passwall|passwall、passwall2 依赖|multi|20260414|
 |[luci-app-gecoosac](https://github.com/laipeng668/luci-app-gecoosac)|laipeng668|集客 AC|multi|20260304|
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|gdy666|lucky 插件|multi|20260215|
-|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20260301|
+|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20260416|
