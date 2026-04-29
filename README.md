@@ -10,7 +10,7 @@
 |软件|作者|功能|包类型|更新日期|
 |:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20260408|
-|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20260416|
+|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|jerrykuku|argon 主题|single|20260429|
 |[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|jerrykuku|argon 主题配置插件|single|20260413|
 |[luci-app-store](https://github.com/linkease/istore)|linkease|istore 应用市场|multi|20251218|
 |[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|sirpdboy|设置向导|multi|20260312|
@@ -28,9 +28,9 @@
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|4IceG|4G/5G 频段锁定|multi|20260426|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|4IceG|4G/5G 信号展示|multi|20260426|
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|4IceG|短信收发|multi|20260413|
-|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|Openwrt-Passwall|passwall|multi|20260428|
+|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|Openwrt-Passwall|passwall|multi|20260429|
 |[luci-app-passwall2](https://github.com/Openwrt-Passwall/openwrt-passwall2)|Openwrt-Passwall|passwall2|multi|20260422|
 |[passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)|Openwrt-Passwall|passwall、passwall2 依赖|multi|20260428|
 |[luci-app-gecoosac](https://github.com/laipeng668/luci-app-gecoosac)|laipeng668|集客 AC|multi|20260304|
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|gdy666|lucky 插件|multi|20260215|
-|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20260427|
+|[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|EasyTier|EasyTier 插件|multi|20260429|
