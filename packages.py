@@ -10,10 +10,11 @@ class PACKAGE(object):
     def __init__(self, l):
         self.name = l[0][l[0].find('[') + 1 : l[0].find(']')]
         self.repo = l[0][l[0].find('(') + 1 : l[0].find(')')] + '.git'
-        self.developer = l[1]
-        self.function = l[2]
-        self.type = l[3]
-        self.date = l[4]
+        self.branch = l[1]
+        self.developer = l[2]
+        self.function = l[3]
+        self.type = l[4]
+        self.date = l[5]
         self.isUpdate = False
 
     def __Download(self, repo, path):
@@ -28,14 +29,14 @@ class PACKAGE(object):
             print('\n', repo)
             if os.path.exists(path):
                 shutil.rmtree(path)
+            
+            # 获取分支
             repository = Repo.clone_from(repo, path)
             
-            # 特殊处理
-            if self.name == "golang": # 切换 go 版本
-                repository.git.checkout("26.x")
-            if self.name == "luci-app-modem": # 新版无法编译，暂时回退，待作者更新
-                repository.git.checkout("f0380e8bbca2a41bf8978fa2c9ce114d09381cbf")
+            # 切换指定分支
+            repository.git.checkout(self.branch)
             
+            # 获取分支更新信息
             log = repository.git.log(date='format:%Y%m%d', max_count=1)
             print(log)
             commint_date = gitlog(log)
@@ -108,14 +109,14 @@ def CreatReadme(fileName, packageList):
         f.write("\n")
         f.write("## 注意事项\n")
         f.write("\n")
-        f.write("1. 编译 OpenWrt 25.12 版本，需要打入`patch/pcie_mhi.patch`补丁，修复 6.12.x 内核下 pcie_mhi 编译问题。\n")
+        f.write("1. 适用于 OpenWrt 25.12 版本。\n")
         f.write("\n")
         f.write("## 软件清单\n")
         f.write("\n")
         f.write("|软件|作者|功能|包类型|更新日期|\n")
         f.write("|:-|:-|:-|:-|:-|\n")
         for package in packageList:
-            f.write("|[%s](%s)|%s|%s|%s|%s|\n"%(package.name, package.repo[:-4], package.developer, package.function, package.type, package.date))
+            f.write("|[%s](%s)|%s|%s|%s|%s|%s|\n"%(package.name, package.repo[:-4], package.branch, package.developer, package.function, package.type, package.date))
     
 
 
