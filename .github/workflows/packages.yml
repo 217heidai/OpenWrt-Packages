@@ -13,9 +13,19 @@ jobs:
   Update_OpenWrt_Packages:
     runs-on: ubuntu-latest
 
+    strategy:
+        fail-fast: false
+        matrix:
+          info:
+            - '{ "BRANCH": "OpenWrt-25.12"}'
+            - '{ "BRANCH": "OpenWrt-24.10"}'
+            - '{ "BRANCH": "OpenWrt-23.05"}'
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@main
+        with:
+          ref: ${{fromJSON(matrix.info).BRANCH}}
 
       - name: Setup Python 3.9.x
         uses: actions/setup-python@main
@@ -40,6 +50,10 @@ jobs:
         with:
           commit_message: ${{ steps.update.outputs.message }}
           
+  Delete_Workflow:
+    needs: [ Update_OpenWrt_Packages ]
+    runs-on: ubuntu-24.04
+    steps:
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@main
         with:
