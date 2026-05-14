@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@main
+        uses: actions/checkout@v6
         with:
           ref: ${{env.BRANCH}}
 
