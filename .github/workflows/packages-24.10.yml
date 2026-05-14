@@ -18,7 +18,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v6
         with:
-          ref: ${{env.BRANCH}}
+          repository: 217heidai/OpenWrt-Packages
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python 3.9.x
         uses: actions/setup-python@main
