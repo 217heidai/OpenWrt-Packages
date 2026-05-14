@@ -10,6 +10,7 @@
  * GNU General Public License for more details.
  */
 
+#include <linux/string.h>
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
@@ -2590,8 +2591,11 @@ static void mhi_netdev_get_drvinfo (struct net_device *ndev, struct ethtool_drvi
 {
 	//struct mhi_netdev *mhi_netdev = ndev_to_mhi(ndev);
 
-	strscpy (info->driver, "pcie_mhi", sizeof info->driver);
-	strscpy (info->version, PCIE_MHI_DRIVER_VERSION, sizeof info->version);
+	strncpy(info->driver, "pcie_mhi", sizeof(info->driver) - 1);
+	info->driver[sizeof(info->driver) - 1] = '\0'; // Ensure null termination
+
+	strncpy(info->version, PCIE_MHI_DRIVER_VERSION, sizeof(info->version) - 1);
+	info->version[sizeof(info->version) - 1] = '\0'; // Ensure null termination
 }
 
 static const struct ethtool_ops mhi_netdev_ethtool_ops = {
