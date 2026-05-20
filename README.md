@@ -7,8 +7,8 @@
 
 ## 软件清单
 
-|软件|分支|作者|功能|包类型|更新日期|
-|:-|:-|:-|:-|:-|:-|
+|软件|作者|功能|包类型|更新日期|
+|:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|26.x|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20260508|
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|master|jerrykuku|argon 主题|single|20260518|
 |[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|master|jerrykuku|argon 主题配置插件|single|20260413|
@@ -24,7 +24,7 @@
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|master|pymumu|smartdns|single|20260129|
 |[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|v5|sbwml|mosdns|multi|20260516|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|master|sbwml|mosdns 依赖|single|20250125|
-|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|main|Openwrt-Passwall|passwall|multi|20260519|
+|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|main|Openwrt-Passwall|passwall|multi|20260520|
 |[luci-app-passwall2](https://github.com/Openwrt-Passwall/openwrt-passwall2)|main|Openwrt-Passwall|passwall2|multi|20260519|
 |[passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)|main|Openwrt-Passwall|passwall、passwall2 依赖|multi|20260520|
 |[luci-app-gecoosac](https://github.com/laipeng668/luci-app-gecoosac)|main|laipeng668|集客 AC|multi|20260304|
