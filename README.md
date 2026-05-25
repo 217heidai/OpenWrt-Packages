@@ -28,10 +28,10 @@
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|main|4IceG|4G/5G 频段锁定|multi|20260517|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|main|4IceG|4G/5G 信号展示|multi|20260426|
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|main|4IceG|短信收发|multi|20260517|
-|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|main|Openwrt-Passwall|passwall|multi|20260524|
+|[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|main|Openwrt-Passwall|passwall|multi|20260525|
 |[luci-app-passwall2](https://github.com/Openwrt-Passwall/openwrt-passwall2)|main|Openwrt-Passwall|passwall2|multi|20260518|
 |[passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)|main|Openwrt-Passwall|passwall、passwall2 依赖|multi|20260523|
 |[luci-app-gecoosac](https://github.com/laipeng668/luci-app-gecoosac)|main|laipeng668|集客 AC|multi|20260304|
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|main|gdy666|lucky 插件|multi|20260215|
 |[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|main|EasyTier|EasyTier 插件|multi|20260516|
-|[luci-app-oaf](https://github.com/destan19/OpenAppFilter)|master|destan19|应用过滤|multi||
+|[luci-app-oaf](https://github.com/destan19/OpenAppFilter)|master|destan19|应用过滤|multi|20260420|
