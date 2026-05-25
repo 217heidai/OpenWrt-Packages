@@ -113,8 +113,8 @@ def CreatReadme(fileName, packageList):
         f.write("\n")
         f.write("## 软件清单\n")
         f.write("\n")
-        f.write("|软件|作者|功能|包类型|更新日期|\n")
-        f.write("|:-|:-|:-|:-|:-|\n")
+        f.write("|软件|分支|作者|功能|包类型|更新日期|\n")
+        f.write("|:-|:-|:-|:-|:-|:-|\n")
         for package in packageList:
             f.write("|[%s](%s)|%s|%s|%s|%s|%s|\n"%(package.name, package.repo[:-4], package.branch, package.developer, package.function, package.type, package.date))
     
