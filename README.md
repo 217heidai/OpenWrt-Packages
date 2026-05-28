@@ -30,4 +30,3 @@
 |[luci-app-gecoosac](https://github.com/laipeng668/luci-app-gecoosac)|main|laipeng668|集客 AC|multi|20260304|
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|main|gdy666|lucky 插件|multi|20260215|
 |[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|main|EasyTier|EasyTier 插件|multi|20260516|
-|[luci-app-oaf](https://github.com/destan19/OpenAppFilter)|master|destan19|应用过滤|multi|20260420|
