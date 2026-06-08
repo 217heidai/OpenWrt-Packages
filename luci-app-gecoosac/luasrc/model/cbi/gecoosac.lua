@@ -113,7 +113,7 @@ o.default     = 8080
 o.datatype    = "port"
 o:depends("isonlyoneprot", false)
 
-o = s:option(Flag, "https", translate("Enable HTTPS service"), translate("A certificate file must be specified, otherwise it will fail to start."))
+o = s:option(Flag, "https", translate("Enable HTTPS service"), translate("Default certificate files are generated when HTTPS starts; custom paths must point to readable files."))
 o.default = 0
 o:depends("isonlyoneprot", false)
 
@@ -158,7 +158,7 @@ debug.default = 0
 debug.rmempty = false
 
 showtip = s:option(Flag, "showtip", translate("Show IP Tip"), translate("Show the IP 6.7.8.9 setup tip when it is not configured."))
-showtip.default = 1
+showtip.default = 0
 showtip.rmempty = false
 
 log = s:option(Flag, "log", translate("Enable Log"))
