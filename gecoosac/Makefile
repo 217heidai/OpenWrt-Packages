@@ -41,7 +41,7 @@ define Package/$(PKG_NAME)
   CATEGORY:=Network
   TITLE:=gecoosac server (version $(PKG_VERSION))
   URL:=http://www.cnrouter.com/
-  DEPENDS:=@(aarch64||arm||i386||mips||mipsel||x86_64)
+  DEPENDS:=@(aarch64||arm||i386||mips||mipsel||x86_64) +openssl-util
 endef
 
 define Package/$(PKG_NAME)/conffiles
