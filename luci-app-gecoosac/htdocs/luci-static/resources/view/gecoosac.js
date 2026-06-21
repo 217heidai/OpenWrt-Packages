@@ -6,11 +6,11 @@
 'require ui';
 'require view';
 
-const DEFAULT_UPLOAD_DIR = '/tmp/gecoosac/upload/';
-const DEFAULT_DB_DIR = '/etc/gecoosac/';
+const DEFAULT_UPLOAD_DIR = '/tmp/gecoosac/upload';
+const DEFAULT_DB_DIR = '/etc/gecoosac';
 const DEFAULT_CRT_FILE = '/etc/gecoosac/tls/gecoosac.crt';
 const DEFAULT_KEY_FILE = '/etc/gecoosac/tls/gecoosac.key';
-const DEFAULT_PID_DIR = '/var/run/';
+const DEFAULT_PID_DIR = '/var/run';
 const CONFIG_BACKUP_DIR = '/etc/gecoosac';
 const DB_DIR_PREFIXES = [ '/etc/gecoosac', '/tmp/gecoosac', '/var/lib/gecoosac' ];
 const PID_DIR_PREFIXES = [ '/var/run', '/tmp/gecoosac' ];
@@ -32,15 +32,6 @@ const callClearUpload = rpc.declare({
 function validPort(value, defaultValue) {
 	const port = Number(value || defaultValue);
 	return Number.isInteger(port) && port >= 1 && port <= 65535 ? String(port) : defaultValue;
-}
-
-function stripTrailingSlashes(value) {
-	let path = String(value || '');
-
-	while (path.length > 1 && path.endsWith('/'))
-		path = path.slice(0, -1);
-
-	return path;
 }
 
 function normalizePath(value) {
@@ -191,7 +182,7 @@ return view.extend({
 		let m, s, o, uploadDirOption;
 
 		m = new form.Map('gecoosac', _('Gecoos AC'),
-			_('Supports Gecoos AP firmware 7.6 and above.') + '<br />' +
+			_('Only supports Gecoos AP firmware 7.6 and above.') + '<br />' +
 				_('Default login password: "admin". Change it immediately after first login.'));
 
 		s = m.section(form.TypedSection, 'gecoosac');
@@ -256,7 +247,7 @@ return view.extend({
 		o.depends({ isonlyoneprot: '0', https: '1' });
 
 		o = s.option(form.Value, 'upload_dir', _('Upload dir path'),
-			_('Upload AP upgrade firmware here. Use an absolute path ending with /gecoosac/upload, for example /tmp/gecoosac/upload/. Do not place it under /etc/gecoosac because that directory is backed up during sysupgrade.'));
+			_('Upload AP upgrade firmware here. Use an absolute path ending with /gecoosac/upload, for example /tmp/gecoosac/upload.<br />Do not place it under /etc/gecoosac because that directory is backed up during sysupgrade.'));
 		uploadDirOption = o;
 		o.placeholder = DEFAULT_UPLOAD_DIR;
 		o.default = DEFAULT_UPLOAD_DIR;
