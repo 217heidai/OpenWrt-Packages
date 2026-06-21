@@ -15,8 +15,8 @@ msgstr "預設憑證檔案會在 HTTPS 啟動時產生；自訂路徑必須指�
 msgid "Gecoos AC"
 msgstr "集客 AC 控制器"
 
-msgid "Supports Gecoos AP firmware 7.6 and above."
-msgstr "支援集客 AP 7.6 及以上版本韌體。"
+msgid "Only supports Gecoos AP firmware 7.6 and above."
+msgstr "僅支援集客 AP 7.6 及以上版本韌體。"
 
 msgid "Default login password: \"admin\". Change it immediately after first login."
 msgstr "初始登入密碼為「admin」，首次登入後請立即修改。"
@@ -51,8 +51,15 @@ msgstr "指定 key 私鑰檔案"
 msgid "Upload dir path"
 msgstr "上傳目錄"
 
-msgid "Upload AP upgrade firmware here. Use an absolute path ending with /gecoosac/upload, for example /tmp/gecoosac/upload/. Do not place it under /etc/gecoosac because that directory is backed up during sysupgrade."
-msgstr "AP 升級韌體會上傳到此目錄。請使用以 /gecoosac/upload 結尾的絕對路徑，例如 /tmp/gecoosac/upload/。不要放在 /etc/gecoosac 下，因為該目錄會在 sysupgrade 時被備份。"
+msgid ""
+"Upload AP upgrade firmware here. Use an absolute path ending with "
+"/gecoosac/upload, for example /tmp/gecoosac/upload.<br />Do not place it "
+"under /etc/gecoosac because that directory is backed up "
+"during sysupgrade."
+msgstr ""
+"AP 升級韌體會上傳到此目錄。請使用以 /gecoosac/upload 結尾的絕對路徑，例如 "
+"/tmp/gecoosac/upload。<br />不要放在 /etc/gecoosac 下，因為該目錄會在 "
+"sysupgrade 時被備份。"
 
 msgid "Upload directory must be an absolute path ending with /gecoosac/upload and must not be under /etc/gecoosac."
 msgstr "上傳目錄必須是以 /gecoosac/upload 結尾的絕對路徑，且不能位於 /etc/gecoosac 下。"
