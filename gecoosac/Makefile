@@ -16,13 +16,13 @@ ifneq (,$(filter x86_64,$(ARCH_ID)))
 else ifneq (,$(filter aarch64%,$(ARCH_ID)))
   PKG_ARCH:=ac_linux_arm64
   PKG_HASH:=66ef7f030954216fcf503bd4586cc3e87ba68f986f9718afc1fd16d6cd924ff0
-else ifneq (,$(filter arm%,$(ARCH_ID)))
+else ifneq (,$(filter arm arm_%,$(ARCH_ID)))
   PKG_ARCH:=ac_linux_arm
   PKG_HASH:=e0d60d19234df39bebb6625eb6e2393fead70d36dd5986dcda6c98b85d6eb175
-else ifneq (,$(filter mipsel%,$(ARCH_ID)))
+else ifneq (,$(filter mipsel mipsel_%,$(ARCH_ID)))
   PKG_ARCH:=ac_linux_mipsle
   PKG_HASH:=ddd30214e07080d8329ab0226d596a7a648c5cff409209ec8256ee2761d60ccb
-else ifneq (,$(filter mips%,$(ARCH_ID)))
+else ifneq (,$(filter mips mips_%,$(ARCH_ID)))
   PKG_ARCH:=ac_linux_mips
   PKG_HASH:=c5636e2277e3d2de3a91c7e3f4f9749dd4d9f35edf274ab7f0c2041131ea8da3
 else ifneq (,$(filter i386%,$(ARCH_ID)))
@@ -32,7 +32,7 @@ else
   PKG_HASH:=dummy
 endif
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(ARCH_ID)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_ARCH)
 PKG_SOURCE_URL:=https://github.com/laipeng668/luci-app-gecoosac/releases/download/V$(PKG_VERSION)/$(PKG_ARCH)?
 UNPACK_CMD=$(CP) $(DL_DIR)/$(PKG_SOURCE) $(PKG_BUILD_DIR)/$(PKG_NAME)
 
