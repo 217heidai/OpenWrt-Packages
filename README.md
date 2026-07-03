@@ -22,7 +22,7 @@
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|master|rufengsuixing|adguardhome|single|20200113|
 |[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|master|pymumu|smartdns luci 界面|single|20260612|
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|master|pymumu|smartdns|single|20260701|
-|[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|v5|sbwml|mosdns|multi|20260606|
+|[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|v5|sbwml|mosdns|multi|20260702|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|master|sbwml|mosdns 依赖|single|20250125|
 |[luci-app-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)|main|Openwrt-Passwall|passwall|multi|20260701|
 |[luci-app-passwall2](https://github.com/Openwrt-Passwall/openwrt-passwall2)|main|Openwrt-Passwall|passwall2|multi|20260626|
