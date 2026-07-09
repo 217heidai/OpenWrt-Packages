@@ -20,7 +20,7 @@
 |[luci-app-parentcontrol](https://github.com/sirpdboy/luci-app-parentcontrol)|main|sirpdboy|家长控制|single|20260304|
 |[luci-app-ddns-go](https://github.com/sirpdboy/luci-app-ddns-go)|main|sirpdboy|ddns|multi|20260623|
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|master|rufengsuixing|adguardhome|single|20200113|
-|[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|master|pymumu|smartdns luci 界面|single|20260707|
+|[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|master|pymumu|smartdns luci 界面|single|20260708|
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|master|pymumu|smartdns|single|20260701|
 |[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|v5|sbwml|mosdns|multi|20260702|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|master|sbwml|mosdns 依赖|single|20250125|
