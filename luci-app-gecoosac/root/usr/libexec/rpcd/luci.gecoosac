@@ -322,6 +322,23 @@ ensure_live_upload_dir() {
 	is_secure_upload_dir "$path"
 }
 
+restore_staged_upload() {
+	local stage="$1" live="$2"
+
+	if [ -e "$stage/upload" ] || [ -L "$stage/upload" ]; then
+		[ -d "$stage/upload" ] && [ ! -L "$stage/upload" ] || return 1
+		if [ -e "$live" ] || [ -L "$live" ]; then
+			[ -d "$live" ] && [ ! -L "$live" ] && rmdir "$live" 2>/dev/null || return 1
+		fi
+		if ! mv "$stage/upload" "$live" 2>/dev/null; then
+			[ -d "$live" ] && [ ! -L "$live" ] && \
+				[ ! -e "$stage/upload" ] && [ ! -L "$stage/upload" ] || return 1
+		fi
+	fi
+	is_secure_upload_dir "$live" || return 1
+	rmdir "$stage" 2>/dev/null
+}
+
 validate_clear_protected_paths() {
 	local root="$1" live_logical="${2:-$1}" live_physical="${3:-$1}" option
 
@@ -481,15 +498,20 @@ clear_upload() {
 			clear_upload_locked_result 0 "Unable to prepare upload directory cleanup" "$logical"
 			return
 		}
-		if ! chmod 0700 "$stage" || ! mv "$physical" "$stage/upload"; then
-			rm -rf "$stage"
+		if ! chmod 0700 "$stage"; then
+			rmdir "$stage" 2>/dev/null
+			clear_upload_locked_result 0 "Unable to prepare upload directory cleanup" "$logical"
+			return
+		fi
+		if ! mv "$physical" "$stage/upload"; then
+			restore_staged_upload "$stage" "$physical" || \
+				logger -t gecoosac "upload cleanup retained staged data at $stage"
 			clear_upload_locked_result 0 "Unable to prepare upload directory cleanup" "$logical"
 			return
 		fi
 		if ! ensure_live_upload_dir "$physical"; then
-			if [ ! -e "$physical" ] && [ ! -L "$physical" ]; then
-				mv "$stage/upload" "$physical" 2>/dev/null
-			fi
+			restore_staged_upload "$stage" "$physical" || \
+				logger -t gecoosac "upload cleanup retained staged data at $stage"
 			clear_upload_locked_result 0 "Unable to recreate upload directory" "$logical"
 			return
 		fi
