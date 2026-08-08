@@ -44,6 +44,7 @@ define Package/$(PKG_NAME)
   TITLE:=gecoosac server (version $(PKG_VERSION))
   URL:=http://www.cnrouter.com/
   DEPENDS:=@(aarch64||arm||i386||mips||mipsel||x86_64) +openssl-util
+  REPLACES:=luci-app-gecoosac
 endef
 
 define Package/$(PKG_NAME)/conffiles

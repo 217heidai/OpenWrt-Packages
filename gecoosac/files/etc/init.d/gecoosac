@@ -659,7 +659,7 @@ start_prepared_service() {
 }
 
 start_service() {
-	prepare_service || return 1
+	prepare_service || exit 1
 	start_prepared_service
 }
 
