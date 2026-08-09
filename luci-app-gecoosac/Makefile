@@ -10,8 +10,8 @@ PKG_VERSION:=2.2
 PKG_RELEASE:=4
 
 LUCI_TITLE:=LuCI Support for gecoosac
-LUCI_DEPENDS:=+luci-base +gecoosac
-LUCI_EXTRA_DEPENDS:=gecoosac (>=2.2.20251015-r4)
+LUCI_DEPENDS:=+luci-base +gecoosac +gecoosac-files
+LUCI_EXTRA_DEPENDS:=gecoosac (>=2.2.20251015)
 LUCI_PKGARCH:=all
 PKG_LICENSE:=AGPL-3.0-only
 
