@@ -9,7 +9,7 @@
 
 |软件|分支|作者|功能|包类型|更新日期|
 |:-|:-|:-|:-|:-|:-|
-|[golang](https://github.com/sbwml/packages_lang_golang)|26.x|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20260814|
+|[golang](https://github.com/sbwml/packages_lang_golang)|26.x|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20260820|
 |[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|master|jerrykuku|argon 主题|single|20260809|
 |[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|master|jerrykuku|argon 主题配置插件|single|20260413|
 |[luci-app-store](https://github.com/linkease/istore)|main|linkease|istore 应用市场|multi|20260819|
@@ -22,7 +22,7 @@
 |[luci-app-adguardhome](https://github.com/rufengsuixing/luci-app-adguardhome)|master|rufengsuixing|adguardhome|single|20200113|
 |[luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns)|master|pymumu|smartdns luci 界面|single|20260708|
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|master|pymumu|smartdns|single|20260701|
-|[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|v5|sbwml|mosdns|multi|20260817|
+|[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|v5|sbwml|mosdns|multi|20260819|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|master|sbwml|mosdns 依赖|single|20250125|
 |[luci-app-modem](https://github.com/Siriling/5G-Modem-Support)|f0380e8bbca2a41bf8978fa2c9ce114d09381cbf|Siriling|4G/5G Modem 拨号|multi|20251108|
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|main|4IceG|4G/5G 频段锁定|multi|20260517|
