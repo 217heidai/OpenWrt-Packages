@@ -7,8 +7,8 @@
 
 include $(TOPDIR)/rules.mk
 
-GO_VERSION_MAJOR_MINOR:=1.26
-GO_VERSION_PATCH:=7
+GO_VERSION_MAJOR_MINOR:=1.27
+GO_VERSION_PATCH:=0
 
 PKG_NAME:=golang
 PKG_VERSION:=$(GO_VERSION_MAJOR_MINOR)$(if $(GO_VERSION_PATCH),.$(GO_VERSION_PATCH))
@@ -20,7 +20,7 @@ GO_SOURCE_URLS:=https://dl.google.com/go/ \
 
 PKG_SOURCE:=go$(PKG_VERSION).src.tar.gz
 PKG_SOURCE_URL:=$(GO_SOURCE_URLS)
-PKG_HASH:=0ed24eac755105085b89fe9cabc2742b91a0ad7b94b59d3ad364918ebc8956ad
+PKG_HASH:=7002403d7cc44529ef6d26f69a44818263395ead7c16c05a5808ae047ebeb0e5
 
 PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
 PKG_LICENSE:=BSD-3-Clause
@@ -67,7 +67,6 @@ HOST_GO_VALID_OS_ARCH:= \
   linux_mips linux_mipsle linux_mips64 linux_mips64le \
   linux_loong64 linux_riscv64 linux_s390x \
   \
-  netbsd_ppc64 \
   openbsd_ppc64 openbsd_riscv64
 
 ifeq ($(HOST_ARCH),x86_64)
