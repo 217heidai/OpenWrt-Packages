@@ -10,8 +10,8 @@
 |软件|分支|作者|功能|包类型|更新日期|
 |:-|:-|:-|:-|:-|:-|
 |[golang](https://github.com/sbwml/packages_lang_golang)|27.x|sbwml|golang(geodata、xray 等依赖高版本 go)|single|20261009|
-|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|master|jerrykuku|argon 主题|single|20261008|
-|[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|master|jerrykuku|argon 主题配置插件|single|20261008|
+|[luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)|master|jerrykuku|argon 主题|single|20261009|
+|[luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config)|master|jerrykuku|argon 主题配置插件|single|20261009|
 |[luci-app-store](https://github.com/linkease/istore)|main|linkease|istore 应用市场|multi|20260925|
 |[luci-app-netwizard](https://github.com/sirpdboy/luci-app-netwizard)|main|sirpdboy|设置向导|multi|20260312|
 |[luci-app-partexp](https://github.com/sirpdboy/luci-app-partexp)|main|sirpdboy|分区管理|multi|20260330|
