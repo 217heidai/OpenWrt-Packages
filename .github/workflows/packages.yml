@@ -74,13 +74,16 @@ jobs:
           [ -n "$SDK_DIR" ] || { echo "!! SDK 解压失败"; exit 1; }
           cd "$SDK_DIR"
           # SDK 默认不含官方 feeds，写入完整 feeds.conf：
-          # 官方 packages/luci/routing/telephony（对应版本分支）+ 本仓库（放最后，覆盖同名包）
+          # 本仓库放最前：feeds install 对同名包先到先得（行序），
+          # 保证 golang/smartdns/mosdns 等用本 feed 版本；
+          # 官方 packages/luci/routing/telephony（对应版本分支）随后。
+          # feed 名只能用 [A-Za-z0-9_]，zz_ 前缀在构建扫描阶段也排官方之后。
           cat > feeds.conf <<EOF
+          src-link zz_openwrtpackages $GITHUB_WORKSPACE
           src-git packages https://github.com/openwrt/packages.git;openwrt-${VER}
           src-git luci https://github.com/openwrt/luci.git;openwrt-${VER}
           src-git routing https://github.com/openwrt/routing.git;openwrt-${VER}
           src-git telephony https://github.com/openwrt/telephony.git;openwrt-${VER}
-          src-link zz-openwrtpackages $GITHUB_WORKSPACE
           EOF
           ./scripts/feeds update -a
           ./scripts/feeds install -a
