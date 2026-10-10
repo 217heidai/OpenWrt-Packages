@@ -30,20 +30,11 @@ class PACKAGE(object):
             if os.path.exists(path):
                 shutil.rmtree(path)
             
-            if self.type == 'sparse':
-                # 稀疏克隆官方大仓库的指定子目录（如 openwrt/packages 的 lang/golang）：
-                # 官方 25.12 分支的 Go 构建框架已重构，sbwml 旧框架不兼容，
-                # golang 必须跟随官方 openwrt-25.12 分支的 lang/golang
-                repository = Repo.clone_from(
-                    repo, path,
-                    multi_options=["--depth", "1", "--filter=blob:none", "--sparse", "-b", self.branch]
-                )
-                repository.git.sparse_checkout("set", "lang/golang")
-            else:
-                # 获取分支
-                repository = Repo.clone_from(repo, path)
-                # 切换指定分支
-                repository.git.checkout(self.branch)
+            # 获取分支
+            repository = Repo.clone_from(repo, path)
+            
+            # 切换指定分支
+            repository.git.checkout(self.branch)
             
             # 获取分支更新信息
             log = repository.git.log(date='format:%Y%m%d', max_count=1)
@@ -82,10 +73,6 @@ class PACKAGE(object):
             if self.name == 'luci-app-store': # 特殊处理
                 tmp += '/luci'
             dirList = self.__ListDir(tmp)
-        elif self.type == 'sparse':
-            # 稀疏克隆后包内容位于 tmp/lang/golang（官方仓库子目录结构）
-            self.__RemoveDir(tmp)
-            dirList.append(tmp + '/lang/golang')
         else:
             self.__RemoveDir(tmp)
             dirList.append(tmp)
