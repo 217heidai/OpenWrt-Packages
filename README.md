@@ -21,7 +21,7 @@
 ### Feed 使用注意事项
 
 1. 必须使用与分支对应的 ImmortalWrt 版本编译（本分支对应 25.12）。
-2. 本 feed 部分包与 ImmortalWrt 的 packages/luci feed 同名（如 smartdns、mosdns、xray-core、luci-theme-argon、luci-app-smartdns 等），`feeds install` 对同名包按 `feeds.conf` 行序先到先得，本行必须放在官方 feeds **之前**才能让本 feed 版本生效；feed 名只能使用 `[A-Za-z0-9_]`（勿加连字符），`zz_` 前缀可保证多 feed 并存时构建扫描也排在官方之后。
+2. 本 feed 部分包与 ImmortalWrt 的 packages/luci feed 同名（如 golang、smartdns、mosdns、xray-core、luci-theme-argon、luci-app-smartdns 等），`feeds install` 对同名包按 `feeds.conf` 行序先到先得，本行必须放在官方 feeds **之前**才能让本 feed 版本生效；feed 名只能使用 `[A-Za-z0-9_]`（勿加连字符），`zz_` 前缀可保证多 feed 并存时构建扫描也排在官方之后。
 3. ImmortalWrt 的 packages / luci / routing feed 必须保留，`luci-*` 等包依赖 `luci-base`。
 4. 本地调试可用 `src-link` 直连本仓库：`src-link zz_openwrtpackages /本地路径/OpenWrt-Packages`。
 
