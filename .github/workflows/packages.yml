@@ -89,7 +89,7 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
           make defconfig
-          # 门禁编译：tcping（轻量 C 包）+ mosdns（Go 包，验证本 feed golang 链）。
+          # 门禁编译：tcping（轻量 C 包）+ mosdns（Go 包，依赖官方 packages feed 的 golang）。
           # 不用 luci-app-smartdns：其依赖链（luci-base 全家桶 + 官方 smartdns）在 SDK 精简环境下误报率高
           make -j"$(nproc)" package/tcping/compile
           make -j"$(nproc)" package/mosdns/compile
