@@ -1,0 +1,869 @@
+#!/bin/sh
+SCRIPT_DIR="${QMODEM_HOME:-/usr/share/qmodem}"
+source "${QMODEM_JSHN:-/usr/share/libubox/jshn.sh}"
+source "${SCRIPT_DIR}/modem_util.sh"
+add_plain_info_entry()
+{
+    key=$1
+    value=$2
+    key_full_name=$3
+    class_overwrite=${4:-}
+    if [ -n "$class_overwrite" ]; then
+        class="$class_overwrite"
+    fi
+    if [ -z "$value" ]; then
+        return
+    fi
+    json_add_object ""
+    json_add_string  key "$key"
+    json_add_string  value "$value"
+    json_add_string "full_name" "$key_full_name"
+    json_add_string "type" "plain_text"
+    if [ -n "${class:-}" ]; then
+        json_add_string "class" "$class"
+        json_add_string "class_origin" "$class"
+    fi
+    if [ -n "${extra_info:-}" ]; then
+        json_add_string "extra_info" "$extra_info"
+    fi
+    json_close_object
+}
+
+add_warning_message_entry()
+{
+    key=$1
+    value=$2
+    key_full_name=$3
+    class_overwrite=${4:-}
+    if [ -n "$class_overwrite" ]; then
+        class="$class_overwrite"
+    fi
+    if [ -z "$value" ]; then
+        return
+    fi
+    json_add_object ""
+    json_add_string  key "$key"
+    json_add_string  value "$value"
+    json_add_string "full_name" "$key_full_name"
+    json_add_string "type" "warning_message"
+    json_add_string "class" "warning"
+    json_add_string "class_origin" "warning"
+    if [ -n "${extra_info:-}" ]; then
+        json_add_string "extra_info" "$extra_info"
+    fi
+    json_close_object
+}
+
+add_bar_info_entry()
+{
+    key=$1
+    value=$2
+    key_full_name=$3
+    min_value=$4
+    max_value=$5
+    unit=$6
+    class_overwrite=${7:-}
+    if [ -n "$class_overwrite" ]; then
+        class="$class_overwrite"
+    fi
+    if [ -z "$value" ]; then
+        return
+    fi
+    json_add_object ""
+    json_add_string  key "$key"
+    json_add_string  value "$value"
+    json_add_string  min_value "$min_value"
+    json_add_string  max_value "$max_value"
+    json_add_string "full_name" "$key_full_name"
+    json_add_string "unit" "$unit"
+    json_add_string "type" "progress_bar"
+    if [ -n "${class:-}" ]; then
+        json_add_string "class" "$class"
+        json_add_string "class_origin" "$class"
+    fi
+    if [ -n "${extra_info:-}" ]; then
+        json_add_string "extra_info" "$extra_info"
+    fi
+    json_close_object
+}
+
+add_speed_entry()
+{
+    type=$1
+    rate=$2
+    if [ -z "$rate" ]; then
+        return
+    fi
+    rate=`rate_convert $rate`
+    case $type in
+        "rx")
+            add_plain_info_entry "Rx Rate" "$rate" "Receive Rate"
+            ;;
+        "tx")
+            add_plain_info_entry "Tx Rate" "$rate" "Transmit Rate"
+            ;;
+        *)
+            return
+            ;;
+    esac
+
+}
+
+add_avalible_band_entry()
+{
+    band_id=$1
+    band_name=$2
+    if [ -z "$band_id" ] || [ -z "$band_name" ]; then
+        return
+    fi
+    json_add_object ""
+    json_add_string  band_id "$band_id"
+    json_add_string  band_name "$band_name"
+    json_add_string "type" "avalible_band"
+    json_close_object
+}
+
+qmodem_band_clean_value()
+{
+    echo "$1" | tr -d '\r" ' | sed 's/^-$//'
+}
+
+qmodem_current_band_name()
+{
+    local rat="$1"
+    local band="$2"
+
+    [ -z "$band" ] && return
+
+    case "$rat" in
+        "NR"|"NR5G-SA"|"NR5G-NSA")
+            echo "NR n$band"
+            ;;
+        "LTE"|"CAT-M"|"CAT-NB"|"eMTC"|"NB-IoT")
+            echo "LTE B$band"
+            ;;
+        "WCDMA"|"UMTS")
+            echo "WCDMA Band $band"
+            ;;
+        *)
+            echo "$band"
+            ;;
+    esac
+}
+
+qmodem_add_current_band_cell()
+{
+    local role="$1"
+    local rat="$2"
+    local band="$(qmodem_band_clean_value "$3")"
+    local channel="$(qmodem_band_clean_value "$4")"
+    local channel_type="$5"
+    local pci="$(qmodem_band_clean_value "$6")"
+    local ul_bandwidth="$(qmodem_band_clean_value "$7")"
+    local dl_bandwidth="$(qmodem_band_clean_value "$8")"
+    local scs="$(qmodem_band_clean_value "$9")"
+    local band_name="$(qmodem_current_band_name "$rat" "$band")"
+
+    [ -z "$band" ] && [ -z "$channel" ] && [ -z "$pci" ] && return
+
+    json_add_object ""
+    json_add_string "role" "$role"
+    json_add_string "rat" "$rat"
+    json_add_string "band" "$band"
+    json_add_string "band_name" "$band_name"
+    json_add_string "channel" "$channel"
+    json_add_string "channel_type" "$channel_type"
+    json_add_string "pci" "$pci"
+    json_add_string "ul_bandwidth" "$ul_bandwidth"
+    json_add_string "dl_bandwidth" "$dl_bandwidth"
+    json_add_string "scs" "$scs"
+    json_close_object
+}
+
+get_current_band()
+{
+    json_add_object "current_band"
+    json_add_string "status" "unsupported"
+    json_add_string "vendor" "$_Vendor"
+    json_add_string "network_mode" ""
+    json_add_array "cells"
+    json_close_array
+    json_close_object
+}
+
+get_current_band_capabilities()
+{
+    json_add_object "current_band_capabilities"
+    json_add_boolean "supported" 0
+    json_add_string "vendor" "$_Vendor"
+    json_add_string "method" ""
+    json_add_string "schema" "current_band"
+    json_close_object
+}
+
+# Helper function for 3G cell info
+# Usage: set_3g_cell_info mcc mnc lac cell_id uarfcn psc band ul_bw dl_bw rscp rsrq ecio rxlev rac
+set_3g_cell_info() {
+    local mcc="$1"
+    local mnc="$2"
+    local lac="$3"
+    local cell_id="$4"
+    local uarfcn="$5"
+    local psc="$6"
+    local band="$7"
+    local ul_bw="$8"
+    local dl_bw="$9"
+    local rscp="${10}"
+    local rsrq="${11}"
+    local ecio="${12}"
+    local rxlev="${13}"
+    local rac="${14}"
+    
+    add_plain_info_entry "MCC" "$mcc" "Mobile Country Code"
+    add_plain_info_entry "MNC" "$mnc" "Mobile Network Code"
+    add_plain_info_entry "LAC" "$lac" "Location Area Code"
+    add_plain_info_entry "Cell ID" "$cell_id" "Cell ID"
+    add_plain_info_entry "UARFCN" "$uarfcn" "UTRA Absolute Radio Frequency Channel Number"
+    add_plain_info_entry "PSC" "$psc" "Primary Scrambling Code"
+    add_plain_info_entry "Band" "$band" "Band"
+    add_plain_info_entry "UL Bandwidth" "$ul_bw" "UL Bandwidth"
+    add_plain_info_entry "DL Bandwidth" "$dl_bw" "DL Bandwidth"
+    add_bar_info_entry "RSCP" "$rscp" "Received Signal Code Power" -120 -25 dBm
+    add_bar_info_entry "RSRQ" "$rsrq" "Reference Signal Received Quality" -19.5 -3 dB
+    add_plain_info_entry "Ec/Io" "$ecio" "Ec/Io"
+    add_bar_info_entry "RxLev" "$rxlev" "Received Signal Level" -120 -25 dBm
+    add_plain_info_entry "RAC" "$rac" "Routing Area Code"
+    
+    unset extra_info
+}
+
+# Helper function for 4G cell info
+# Usage: set_4g_cell_info mcc mnc tac cell_id earfcn pci band ul_bw dl_bw rsrp rsrq sinr rssnr rxlev
+set_4g_cell_info() {
+    local mcc="$1"
+    local mnc="$2"
+    local tac="$3"
+    local cell_id="$4"
+    local earfcn="$5"
+    local pci="$6"
+    local band="$7"
+    local ul_bw="$8"
+    local dl_bw="$9"
+    local rsrp="${10}"
+    local rsrq="${11}"
+    local sinr="${12}"
+    local rssnr="${13}"
+    local rxlev="${14}"
+    
+    add_plain_info_entry "MCC" "$mcc" "Mobile Country Code"
+    add_plain_info_entry "MNC" "$mnc" "Mobile Network Code"
+    add_plain_info_entry "TAC" "$tac" "Tracking Area Code"
+    add_plain_info_entry "Cell ID" "$cell_id" "Cell ID"
+    add_plain_info_entry "Physical Cell ID" "$pci" "Physical Cell ID"
+    add_plain_info_entry "EARFCN" "$earfcn" "E-UTRA Absolute Radio Frequency Channel Number"
+    add_plain_info_entry "Band" "$band" "Band"
+    add_plain_info_entry "UL Bandwidth" "$ul_bw" "UL Bandwidth"
+    add_plain_info_entry "DL Bandwidth" "$dl_bw" "DL Bandwidth"
+    add_bar_info_entry "RSRP" "$rsrp" "Reference Signal Received Power" -140 -44 dBm
+    add_bar_info_entry "RSRQ" "$rsrq" "Reference Signal Received Quality" -19.5 -3 dB
+    add_bar_info_entry "SINR" "$sinr" "Signal to Interference plus Noise Ratio" 0 30 dB
+    add_plain_info_entry "RSSNR" "$rssnr" "Radio Signal Strength Noise Ratio"
+    add_bar_info_entry "RxLev" "$rxlev" "Received Signal Level" -120 -25 dBm
+    
+    unset extra_info
+}
+
+# Helper function for 5G cell info
+# Usage: set_5g_cell_info mcc mnc tac cell_id arfcn pci band ul_bw dl_bw rsrp rsrq sinr rssnr rxlev
+set_5g_cell_info() {
+    local mcc="$1"
+    local mnc="$2"
+    local tac="$3"
+    local cell_id="$4"
+    local arfcn="$5"
+    local pci="$6"
+    local band="$7"
+    local ul_bw="$8"
+    local dl_bw="$9"
+    local rsrp="${10}"
+    local rsrq="${11}"
+    local sinr="${12}"
+    local rssnr="${13}"
+    local rxlev="${14}"
+    
+    add_plain_info_entry "MCC" "$mcc" "Mobile Country Code"
+    add_plain_info_entry "MNC" "$mnc" "Mobile Network Code"
+    add_plain_info_entry "TAC" "$tac" "Tracking Area Code"
+    add_plain_info_entry "Cell ID" "$cell_id" "Cell ID"
+    add_plain_info_entry "Physical Cell ID" "$pci" "Physical Cell ID"
+    add_plain_info_entry "ARFCN" "$arfcn" "Absolute Radio-Frequency Channel Number"
+    add_plain_info_entry "Band" "$band" "Band"
+    add_plain_info_entry "UL Bandwidth" "$ul_bw" "UL Bandwidth"
+    add_plain_info_entry "DL Bandwidth" "$dl_bw" "DL Bandwidth"
+    add_bar_info_entry "RSRP" "$rsrp" "Reference Signal Received Power" -140 -44 dBm
+    add_bar_info_entry "RSRQ" "$rsrq" "Reference Signal Received Quality" -19.5 -3 dB
+    add_bar_info_entry "SINR" "$sinr" "Signal to Interference plus Noise Ratio" 0 30 dB
+    add_plain_info_entry "RSSNR" "$rssnr" "Radio Signal Strength Noise Ratio"
+    add_bar_info_entry "RxLev" "$rxlev" "Received Signal Level" -120 -25 dBm
+    
+    unset extra_info
+}
+
+# Helper function to add CA (Carrier Aggregation) info
+# Usage: add_ca_info rat ca_arfcn ca_pci ca_band ca_ul_bw ca_dl_bw
+# rat should be "4G" or "5G"
+add_ca_info() {
+    local rat="$1"
+    local ca_arfcn="$2"
+    local ca_pci="$3"
+    local ca_band="$4"
+    local ca_ul_bw="$5"
+    local ca_dl_bw="$6"
+    
+    [ -z "$ca_arfcn" ] && [ -z "$ca_pci" ] && [ -z "$ca_band" ] && return
+    
+    case "$rat" in
+        "4G")
+            extra_info="CA-LTE"
+            local arfcn_label="EARFCN (CA)"
+            ;;
+        "5G")
+            extra_info="CA-NR"
+            local arfcn_label="ARFCN (CA)"
+            ;;
+        *)
+            return
+            ;;
+    esac
+    
+    add_plain_info_entry "Physical Cell ID (CA)" "$ca_pci" "Physical Cell ID (CA)"
+    add_plain_info_entry "$arfcn_label" "$ca_arfcn" "$arfcn_label"
+    add_plain_info_entry "Band (CA)" "$ca_band" "Band (CA)"
+    add_plain_info_entry "UL Bandwidth (CA)" "$ca_ul_bw" "UL Bandwidth (CA)"
+    add_plain_info_entry "DL Bandwidth (CA)" "$ca_dl_bw" "DL Bandwidth (CA)"
+    
+    unset extra_info
+}
+
+get_driver()
+{
+    local mode=""
+    local modem_root="${modem_path:-}"
+    [ -n "$modem_root" ] || {
+        echo unknown
+        return
+    }
+    for i in $(find "$modem_root" -name driver);do
+        lsfile=$(ls -l $i)
+        type=${lsfile:0:1}
+        if [ "$type" == "l" ];then
+            link=$(basename $(ls -l $i | awk '{print $11}'))
+            case $link in
+                "mtk_t7xx")
+                    mode="mtk_pcie"
+                    break
+                    ;;
+                "qmi_wwan"*) 
+                    mode="qmi"
+                    break
+                ;;
+                "cdc_mbim")
+                    mode="mbim"
+                    break
+                    ;;
+                "cdc_ncm")
+                    mode="ncm"
+                    break
+                    ;;
+                "cdc_ether")
+                    mode="ecm"
+                    break
+                    ;;
+                "rndis_host")
+                    mode="rndis"
+                    break
+                    ;;
+                "mhi_netdev")
+                    mode="mhi"
+                    break
+                    ;;
+                *)
+                    if [ -z "$mode" ]; then
+                        mode="unknown"
+                    fi
+                ;;
+            esac
+        fi
+    done
+    echo "${mode:-unknown}"
+}
+
+get_dns()
+{
+    [ -z "$pdp_index" ] && {
+        pdp_index="1"
+    }
+
+    local public_dns1_ipv4="223.5.5.5"
+    local public_dns2_ipv4="119.29.29.29"
+    local public_dns1_ipv6="2400:3200::1" #下一代互联网北京研究中心：240C::6666，阿里：2400:3200::1，腾讯：2402:4e00::
+    local public_dns2_ipv6="2402:4e00::"
+
+    #获取DNS地址
+    local response=$(cmd_gtdns "$at_port" "$pdp_index" | grep "+GTDNS: ")
+
+    local ipv4_dns1=$(echo "${response}" | awk -F'"' '{print $2}' | awk -F',' '{print $1}')
+    [ -z "$ipv4_dns1" ] && {
+        ipv4_dns1="${public_dns1_ipv4}"
+    }
+
+    local ipv4_dns2=$(echo "${response}" | awk -F'"' '{print $4}' | awk -F',' '{print $1}')
+    [ -z "$ipv4_dns2" ] && {
+        ipv4_dns2="${public_dns2_ipv4}"
+    }
+
+    local ipv6_dns1=$(echo "${response}" | awk -F'"' '{print $2}' | awk -F',' '{print $2}')
+    [ -z "$ipv6_dns1" ] && {
+        ipv6_dns1="${public_dns1_ipv6}"
+    }
+
+    local ipv6_dns2=$(echo "${response}" | awk -F'"' '{print $4}' | awk -F',' '{print $2}')
+    [ -z "$ipv6_dns2" ] && {
+        ipv6_dns2="${public_dns2_ipv6}"
+    }
+    json_add_object "dns"
+    json_add_string "ipv4_dns1" "$ipv4_dns1"
+    json_add_string "ipv4_dns2" "$ipv4_dns2"
+    json_add_string "ipv6_dns1" "$ipv6_dns1"
+    json_add_string "ipv6_dns2" "$ipv6_dns2"
+    json_close_object
+}
+
+get_sim_status()
+{
+    local sim_status
+    case $1 in
+        "") 
+            sim_status="miss"
+            sim_state_code=0
+            ;;
+        *"ERROR"*) 
+            sim_status="miss"
+            sim_state_code=0
+            ;;
+        *"READY"*) 
+            sim_status="ready" 
+            sim_state_code=1
+            ;;
+        *"SIM PIN"*) 
+            sim_status="MT is waiting SIM PIN to be given"
+            sim_state_code=2
+             ;;
+        *"SIM PUK"*) 
+            sim_status="MT is waiting SIM PUK to be given"
+            sim_state_code=3
+            ;;
+        *"PH-FSIM PIN"*)
+            sim_status="MT is waiting phone-to-SIM card password to be given"
+            sim_state_code=4
+            ;;
+        *"PH-FSIM PIN"*) 
+            sim_status="MT is waiting phone-to-very first SIM card password to be given"
+            sim_state_code=5
+            ;;
+        *"PH-FSIM PUK"*) 
+            sim_status="MT is waiting phone-to-very first SIM card unblocking password to be given"
+            sim_state_code=6
+            ;;
+        *"SIM PIN2"*) 
+            sim_status="MT is waiting SIM PIN2 to be given"
+            sim_state_code=7
+            ;;
+        *"SIM PUK2"*) 
+            sim_status="MT is waiting SIM PUK2 to be given" 
+            sim_state_code=8
+            ;;
+        *"PH-NET PIN"*) 
+            sim_status="MT is waiting network personalization password to be given" 
+            sim_state_code=9
+            ;;
+        *"PH-NET PUK"*) 
+            sim_status="MT is waiting network personalization unblocking password to be given" 
+            sim_state_code=10
+            ;;
+        *"PH-NETSUB PIN"*) 
+            sim_status="MT is waiting network subset personalization password to be given" 
+            sim_state_code=11
+            ;;
+        *"PH-NETSUB PUK"*) 
+            sim_status="MT is waiting network subset personalization unblocking password to be given" 
+            sim_state_code=12
+            ;;
+        *"PH-SP PIN"*) 
+            sim_status="MT is waiting service provider personalization password to be given" 
+            sim_state_code=13
+            ;;
+        *"PH-SP PUK"*)
+            sim_status="MT is waiting service provider personalization unblocking password to be given"
+            sim_state_code=14
+            ;;
+        *"PH-CORP PIN"*) 
+            sim_status="MT is waiting corporate personalization password to be given" 
+            sim_state_code=16
+            ;;
+
+        *"PH-CORP PUK"*) 
+            sim_status="MT is waiting corporate personalization unblocking password to be given" 
+            sim_state_code=17
+            ;;
+        *) 
+            sim_status="unknown" 
+            sim_state_code=99
+            ;;
+    esac
+    echo "$sim_status"
+}
+
+#获取信号强度指示
+# $1:信号强度指示数字
+get_rssi()
+{
+    local rssi
+    case $1 in
+        "99") rssi="unknown" ;;
+        * )  rssi=$((2 * $1 - 113)) ;;
+    esac
+    echo "$rssi"
+}
+
+#获取网络类型
+# $1:网络类型数字
+get_rat()
+{
+    local rat
+    case $1 in
+        "0"|"1"|"3"|"8") rat="GSM" ;;
+        "2"|"4"|"5"|"6"|"9"|"10") rat="WCDMA" ;;
+        "7") rat="LTE" ;;
+        "11"|"12") rat="NR" ;;
+        "13") rat="LTE-NR" ;;
+    esac
+    echo "${rat}"
+}
+
+# Return the first usable quoted IPv4 address from AT+CGPADDR output.
+# FM350 reports IPv6 in dotted decimal notation after the IPv4 address.
+get_cgpaddr_ipv4()
+{
+    echo "$1" | tr -d '"' | tr ',' '\n' \
+        | grep -oE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' \
+        | grep -v '^0\.0\.0\.0$' | head -n 1
+}
+
+#获取连接状态
+#return raw data
+get_connect_status()
+{
+    connect_status="No"
+    driver=$(get_driver)
+    if [ "$driver" = "mtk_pcie" ]; then
+        mbim_port=$(echo "$at_port" | sed 's/at/mbim/g')
+        local config=$(umbim -d $mbim_port config)
+        local ipv4=$(echo "$config" | grep "ipv4address:" | awk '{print $2}' | cut -d'/' -f1)
+        local ipv6=$(echo "$config" | grep "ipv6address:" | awk '{print $2}' | cut -d'/' -f1)
+
+        disallow_ipv4="0.0.0.0"
+        if [ -n "$ipv4" ] && [ "$ipv4" != "$disallow_ipv4" ] || [ -n "$ipv6" ] && [ "$ipv6" != "::" ]; then
+            connect_status="Yes"
+        fi
+    else
+        expect="+CGACT:"
+        result=$(cmd_cgact_query "$at_port" | tr -d '\r' | grep $expect)
+        # for fm350 pdp_index 0, GGACT will return empty,so we need to add it manually
+        if [ -z "$result" ]; then
+            case $vendor in
+                "fibocom")
+                    case $platform in
+                        "mediatek")
+                            result="+CGACT: 0,1"
+                            ;;
+                    esac
+                    ;;
+            esac
+        fi
+        
+        for pdp_index in $(echo "$result" | tr -d ' \r' | awk -F '[,:]' '$3 == 1 {print $2}'); do
+            expect="+CGPADDR:"
+            result=$(cmd_cgpaddr "$at_port" "$pdp_index" | tr -d '\r'| grep $expect)
+            if [ -n "$result" ];then
+                ipv6=$(echo "$result" | grep -oE "\b([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}\b")
+                if [ -z "$ipv6" ]; then
+                    ipv6=$(echo "$result" | tr -d '"' | tr ',' '\n' | grep -oE '^([0-9]{1,3}\.){15}[0-9]{1,3}$' | head -n 1)
+                fi
+                ipv4=$(get_cgpaddr_ipv4 "$result")
+            fi
+            if [ -n "$ipv4" ] || [ -n "$ipv6" ];then
+                connect_status="Yes"
+                break
+            else
+                connect_status="No"
+            fi
+        done
+    fi
+    add_plain_info_entry "connect_status" "$connect_status" "Connect Status"
+}
+
+#获取移远模组信息
+# $1:AT串口
+# $2:平台
+# $3:连接定义
+get_info()
+{
+    #基本信息
+    base_info
+
+    #SIM卡信息
+    sim_info
+    if [ "$sim_status" != "ready" ]; then
+        [ -n "$sim_status" ] && add_warning_message_entry "sim_status" "$sim_status" "SIM Error,Error code:" "warning"
+        [ -z "$sim_status" ] && add_warning_message_entry "sim_status" "" "Modem Offline" "warning"
+        return
+    fi
+
+    #网络信息
+    network_info
+    if [ "$connect_status" != "Yes" ]; then
+        return
+    fi
+
+    #小区信息
+    cell_info
+
+    return
+
+}
+
+soft_reboot()
+{
+    cmd_cfun_soft_reboot "$at_port"
+}
+
+hard_reboot()
+{
+    #get power_gpio_pin
+    source "${QMODEM_LIB_FUNCTIONS:-/lib/functions.sh}"
+    config_load qmodem
+    config_foreach get_gpio_by_slot modem-slot
+    if [ -z "$gpio" ] || [ -z "$gpio_up" ] || [ -z "$gpio_down" ]; then
+        config_foreach get_gpio_by_device modem-device
+    fi
+    gpio="/sys/class/gpio/$gpio/value"
+    [ ! -f "$gpio" ] || [ -z "$gpio_up" ] || [ -z "$gpio_down" ] && {
+        soft_reboot
+        m_debug "gpio not found, failback to soft reboot"
+        return
+    }
+    echo $gpio_down > $gpio
+    sleep 1
+    echo $gpio_up > $gpio
+    
+}
+
+get_gpio_by_slot()
+{
+    local cfg="$1"
+    config_get slot "$cfg" slot
+    if [ "$modem_slot" = "$slot" ];then
+        config_get gpio "$cfg" gpio
+        config_get gpio_up "$cfg" gpio_up
+        config_get gpio_down "$cfg" gpio_down
+    fi
+}
+
+get_gpio_by_device()
+{
+    local cfg="$1"
+
+    [ "$config_section" = "$cfg" ] || return
+
+    config_get gpio "$cfg" gpio
+    config_get gpio_up "$cfg" gpio_up
+    config_get gpio_down "$cfg" gpio_down
+}
+
+get_reboot_caps()
+{
+    source "${QMODEM_LIB_FUNCTIONS:-/lib/functions.sh}"
+    config_load qmodem
+    config_foreach get_gpio_by_slot modem-slot
+    if [ -z "$gpio" ] || [ -z "$gpio_up" ] || [ -z "$gpio_down" ]; then
+        config_foreach get_gpio_by_device modem-device
+    fi
+    json_init
+    json_add_object "reboot_caps"
+    json_add_int "soft_reboot_caps" "1"
+    if [ -n "$gpio" ] && [ -n "$gpio_up" ] && [ -n "$gpio_down" ];then
+         json_add_int "hard_reboot_caps" "1" 
+    else
+        json_add_int "hard_reboot_caps" "0"
+    fi
+    json_close_object
+    json_dump
+}
+
+rate_convert()
+{
+    #check if bc is installed
+    is_bc_installed=$(which bc)
+    local rate=$1
+    rate_units="bps Kbps Mbps Gbps"
+    if [ -z "$is_bc_installed" ]; then
+        for i in $(seq 0 3); do
+            if [ $rate -lt 1024 ]; then
+                break
+            fi
+            rate=$(($rate / 1024))
+        done
+    else
+        for i in $(seq 0 3); do
+            if [ $(echo "$rate < 1024" | bc) -eq 1 ]; then
+                break
+            fi
+            rate=$(echo "scale=2; $rate / 1024" | bc)
+        done
+    fi
+    echo "$rate `echo $rate_units | cut -d ' ' -f $(($i+1))`"
+}
+
+get_5g_lan()
+{
+    json_add_boolean supported 0
+}
+
+set_5g_lan()
+{
+    json_add_boolean supported 0
+    json_add_string error "5G LAN is not supported by this modem"
+    return 1
+}
+
+get_modem_disabled_features()
+{
+    . "${QMODEM_LIB_FUNCTIONS:-/lib/functions.sh}"
+    config_load qmodem 
+    config_list_foreach $config_section disabled_features _add_disabled_features
+}
+
+vendor_get_disabled_features()
+{
+    return 0
+}
+
+get_sms_capabilities() {
+    local res sms_cap
+    res=$(cmd_cpms_query "$at_port" | grep "CPMS:" | xargs)
+    [ -z "$res" ] && return
+
+    sms_cap=${res##*+CPMS:}
+    set -- $(echo "$sms_cap" | tr ',' ' ')
+    local mem1=$1 used1=$2 total1=$3
+    local mem2=$4 used2=$5 total2=$6
+    local mem3=$7 used3=$8 total3=$9
+
+    json_add_object "sms_capabilities"
+    json_add_string "mem1" "$mem1"
+    json_add_string "mem2" "$mem2"
+    json_add_string "mem3" "$mem3"
+    json_add_object "ME"
+    json_close_object
+    json_add_object "SM"
+    json_close_object
+
+    for idx in 1 2 3; do
+        eval "mem=\$mem$idx"
+        eval "used=\$used$idx"
+        eval "total=\$total$idx"
+
+        case "$mem" in
+            "SM")
+                json_select "SM"
+                ;;
+            "MT"|"ME")
+                json_select "ME"
+                ;;
+            *)
+                continue
+                ;;
+        esac
+
+        json_add_string "used" "$used"
+        json_add_string "total" "$total"
+        json_close_object
+    done
+}
+
+set_sms_storage()
+{
+    mem1=$(echo $1 | jq -r '.mem1')
+    mem2=$(echo $1 | jq -r '.mem2')
+    mem3=$(echo $1 | jq -r '.mem3')
+    json_add_string "raw" "$1"
+    if [ -z "$mem1" ] || [ -z "$mem2" ]; then
+        return
+    fi
+    if [ "$mem3" == "Loading" ];then
+        res=$(cmd_cpms_set "$at_port" "$mem1" "$mem2")
+    else
+        res=$(cmd_cpms_set "$at_port" "$mem1" "$mem2" "$mem3")
+    fi
+    
+    json_select "result"
+    json_add_string "result" "$res"
+}
+
+get_sim_switch_capabilities(){
+    json_add_string "supportSwitch" "0"
+}
+
+get_usage_stats()
+{
+    json_add_boolean "available" 0
+    json_add_int "updated_at" 0
+    json_add_int "total_rx_bytes" 0
+    json_add_int "total_tx_bytes" 0
+}
+
+write_usage_stats()
+{
+    return 1
+}
+
+clear_usage_stats()
+{
+    json_add_boolean "result" 0
+}
+
+get_global_disabled_features()
+{
+    . "${QMODEM_LIB_FUNCTIONS:-/lib/functions.sh}"
+    config_load qmodem 
+    config_list_foreach main disabled_features _add_disabled_features
+}
+
+_add_disabled_features()
+{
+    json_add_string "" "$1"
+}
+
+_copyright()
+{
+    json_add_object "copyright"
+    json_add_string "Vendor" "${_Vendor}"
+    json_add_string "Author" "${_Author}"
+    json_add_string "Maintainer" "${_Maintainer}"
+    json_close_object
+}
+
+#generic AT command wrappers (cmds layer); each vendor script loads its
+#vendor-specific wrappers from cmds/<vendor>.sh
+source "${SCRIPT_DIR}/cmds/generic.sh"

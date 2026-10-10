@@ -1,0 +1,631 @@
+#include "ubus_at_daemon.h"
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+at_daemon_ctx_t g_daemon_ctx;
+
+// Policy for open method
+enum {
+    OPEN_AT_PORT,
+    OPEN_BAUDRATE,
+    OPEN_DATABITS,
+    OPEN_PARITY,
+    OPEN_STOPBITS,
+    OPEN_TIMEOUT,
+    __OPEN_MAX
+};
+
+static const struct blobmsg_policy open_policy[] = {
+    [OPEN_AT_PORT] = { .name = JSON_AT_PORT, .type = BLOBMSG_TYPE_STRING },
+    [OPEN_BAUDRATE] = { .name = JSON_BAUDRATE, .type = BLOBMSG_TYPE_INT32 },
+    [OPEN_DATABITS] = { .name = JSON_DATABITS, .type = BLOBMSG_TYPE_INT32 },
+    [OPEN_PARITY] = { .name = JSON_PARITY, .type = BLOBMSG_TYPE_INT32 },
+    [OPEN_STOPBITS] = { .name = JSON_STOPBITS, .type = BLOBMSG_TYPE_INT32 },
+    [OPEN_TIMEOUT] = { .name = JSON_TIMEOUT, .type = BLOBMSG_TYPE_INT32 },
+};
+
+// Policy for sendat method
+enum {
+    SENDAT_AT_PORT,
+    SENDAT_TIMEOUT,
+    SENDAT_END_FLAG,
+    SENDAT_AT_CMD,
+    SENDAT_RAW_AT_CONTENT,
+    SENDAT_SENDONLY,
+    SENDAT_OWNER,
+    __SENDAT_MAX
+};
+
+static const struct blobmsg_policy sendat_policy[] = {
+    [SENDAT_AT_PORT] = { .name = JSON_AT_PORT, .type = BLOBMSG_TYPE_STRING },
+    [SENDAT_TIMEOUT] = { .name = JSON_TIMEOUT, .type = BLOBMSG_TYPE_INT32 },
+    [SENDAT_END_FLAG] = { .name = "end_flag", .type = BLOBMSG_TYPE_STRING },
+    [SENDAT_AT_CMD] = { .name = "at_cmd", .type = BLOBMSG_TYPE_STRING },
+    [SENDAT_RAW_AT_CONTENT] = { .name = "raw_at_content", .type = BLOBMSG_TYPE_STRING },
+    [SENDAT_SENDONLY] = { .name = "sendonly", .type = BLOBMSG_TYPE_BOOL },
+    [SENDAT_OWNER] = { .name = "owner", .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
+    CONTROL_AT_PORT,
+    CONTROL_OWNER,
+    CONTROL_TOKEN,
+    CONTROL_TTL,
+    CONTROL_URC_ID,
+    CONTROL_PREFIX,
+    __CONTROL_MAX
+};
+
+static const struct blobmsg_policy control_policy[] = {
+    [CONTROL_AT_PORT] = { .name = JSON_AT_PORT, .type = BLOBMSG_TYPE_STRING },
+    [CONTROL_OWNER] = { .name = "owner", .type = BLOBMSG_TYPE_STRING },
+    [CONTROL_TOKEN] = { .name = "token", .type = BLOBMSG_TYPE_STRING },
+    [CONTROL_TTL] = { .name = "ttl", .type = BLOBMSG_TYPE_INT32 },
+    [CONTROL_URC_ID] = { .name = "urc_id", .type = BLOBMSG_TYPE_STRING },
+    [CONTROL_PREFIX] = { .name = "prefix", .type = BLOBMSG_TYPE_STRING },
+};
+
+// Policy for close method
+enum {
+    CLOSE_AT_PORT,
+    __CLOSE_MAX
+};
+
+static const struct blobmsg_policy close_policy[] = {
+    [CLOSE_AT_PORT] = { .name = JSON_AT_PORT, .type = BLOBMSG_TYPE_STRING },
+};
+
+// Ubus method: open
+static int ubus_open_method(struct ubus_context *ctx, struct ubus_object *obj,
+                           struct ubus_request_data *req, const char *method,
+                           struct blob_attr *msg) {
+    struct blob_attr *tb[__OPEN_MAX];
+    const char *at_port;
+    int baudrate = 115200;  // Default values from const.h
+    int databits = DEFAULT_DATABITS;
+    int parity = DEFAULT_PARITY;
+    int stopbits = DEFAULT_STOPBITS;
+    int timeout = DEFAULT_TIMEOUT;
+    
+    blobmsg_parse(open_policy, __OPEN_MAX, tb, blob_data(msg), blob_len(msg));
+    
+    if (!tb[OPEN_AT_PORT]) {
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    }
+    
+    at_port = blobmsg_get_string(tb[OPEN_AT_PORT]);
+    
+    if (tb[OPEN_BAUDRATE])
+        baudrate = blobmsg_get_u32(tb[OPEN_BAUDRATE]);
+    if (tb[OPEN_DATABITS])
+        databits = blobmsg_get_u32(tb[OPEN_DATABITS]);
+    if (tb[OPEN_PARITY])
+        parity = blobmsg_get_u32(tb[OPEN_PARITY]);
+    if (tb[OPEN_STOPBITS])
+        stopbits = blobmsg_get_u32(tb[OPEN_STOPBITS]);
+    if (tb[OPEN_TIMEOUT])
+        timeout = blobmsg_get_u32(tb[OPEN_TIMEOUT]);
+    
+    // Find existing port instance
+    at_port_instance_t *port = find_port_instance(at_port);
+    int is_new_port = (port == NULL);
+    
+    if (!port) {
+        // Check if port file exists before creating instance
+        if (access(at_port, F_OK) != 0) {
+            struct blob_buf b = {};
+            blob_buf_init(&b, 0);
+            blobmsg_add_string(&b, "status", "error");
+            blobmsg_add_string(&b, "message", "Port file does not exist");
+            ubus_send_reply(ctx, req, b.head);
+            blob_buf_free(&b);
+            return UBUS_STATUS_OK;
+        }
+        
+        port = create_port_instance(at_port);
+        if (!port) {
+            return UBUS_STATUS_NO_DATA;
+        }
+    }
+    
+    // Open the port
+    int result = open_at_port(port, baudrate, databits, parity, stopbits);
+    
+    struct blob_buf b = {};
+    blob_buf_init(&b, 0);
+    
+    if (result == 0) {
+        blobmsg_add_string(&b, "status", "success");
+        blobmsg_add_string(&b, "port", at_port);
+        blobmsg_add_u32(&b, "baudrate", baudrate);
+        blobmsg_add_u32(&b, "databits", databits);
+        blobmsg_add_u32(&b, "parity", parity);
+        blobmsg_add_u32(&b, "stopbits", stopbits);
+        ubus_send_reply(ctx, req, b.head);
+    } else {
+        blobmsg_add_string(&b, "status", "error");
+        blobmsg_add_string(&b, "message", "Failed to open port");
+        ubus_send_reply(ctx, req, b.head);
+        
+        // If this was a new port instance and opening failed, remove it from the list
+        if (is_new_port) {
+            destroy_port_instance(port);
+        }
+    }
+    
+    blob_buf_free(&b);
+    return UBUS_STATUS_OK;
+}
+
+static int ubus_sendat_method(struct ubus_context *ctx, struct ubus_object *obj,
+                             struct ubus_request_data *req, const char *method,
+                             struct blob_attr *msg) {
+    struct blob_attr *tb[__SENDAT_MAX];
+    const char *at_port, *at_cmd = NULL, *raw_at_content = NULL, *end_flag = NULL;
+    const char *owner = NULL;
+    int timeout = DEFAULT_TIMEOUT;
+    int is_raw = 0;
+    int sendonly = 0;
+    
+    blobmsg_parse(sendat_policy, __SENDAT_MAX, tb, blob_data(msg), blob_len(msg));
+    
+    if (!tb[SENDAT_AT_PORT]) {
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    }
+    
+    at_port = blobmsg_get_string(tb[SENDAT_AT_PORT]);
+    
+    if (tb[SENDAT_TIMEOUT])
+        timeout = blobmsg_get_u32(tb[SENDAT_TIMEOUT]);
+    if (tb[SENDAT_END_FLAG])
+        end_flag = blobmsg_get_string(tb[SENDAT_END_FLAG]);
+    if (tb[SENDAT_SENDONLY])
+        sendonly = blobmsg_get_bool(tb[SENDAT_SENDONLY]);
+    if (tb[SENDAT_OWNER])
+        owner = blobmsg_get_string(tb[SENDAT_OWNER]);
+    
+    if (tb[SENDAT_AT_CMD]) {
+        at_cmd = blobmsg_get_string(tb[SENDAT_AT_CMD]);
+        is_raw = 0;
+    } else if (tb[SENDAT_RAW_AT_CONTENT]) {
+        raw_at_content = blobmsg_get_string(tb[SENDAT_RAW_AT_CONTENT]);
+        is_raw = 1;
+    } else {
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    }
+    
+    // Find or create port instance
+    at_port_instance_t *port = find_port_instance(at_port);
+    if (!port) {
+        port = create_port_instance(at_port);
+        if (!port) {
+            return UBUS_STATUS_NO_DATA;
+        }
+    }
+    
+    const char *cmd = is_raw ? raw_at_content : at_cmd;
+    int result;
+    at_response_t response;
+
+    if (at_lease_authorize(at_port, owner) != 0) {
+        struct blob_buf busy = {};
+        blob_buf_init(&busy, 0);
+        blobmsg_add_string(&busy, "status", "settings_pending");
+        blobmsg_add_string(&busy, "message", "AT port is leased for modem initialization");
+        ubus_send_reply(ctx, req, busy.head);
+        blob_buf_free(&busy);
+        return UBUS_STATUS_OK;
+    }
+    
+    if (sendonly) {
+        // Send only without waiting for response
+        result = send_at_command_only(port, cmd, is_raw);
+    } else {
+        // Send AT command with response
+        result = send_at_command_with_response(port, cmd, timeout, end_flag, is_raw, &response);
+    }
+    
+    struct blob_buf b = {};
+    blob_buf_init(&b, 0);
+    
+    blobmsg_add_string(&b, "port", at_port);
+    blobmsg_add_string(&b, "command", cmd);
+    blobmsg_add_u32(&b, "is_raw", is_raw);
+    blobmsg_add_u32(&b, "sendonly", sendonly);
+    
+    if (sendonly) {
+        // For send-only mode
+        if (result == 0) {
+            blobmsg_add_string(&b, "status", "success");
+            blobmsg_add_string(&b, "message", "Command sent successfully");
+        } else {
+            blobmsg_add_string(&b, "status", "error");
+            blobmsg_add_string(&b, "message", "Failed to send AT command");
+        }
+    } else {
+        // For normal mode with response
+        blobmsg_add_u32(&b, "timeout", timeout);
+        blobmsg_add_string(&b, "end_flag", end_flag ? end_flag : "default");
+        
+        // Add debug info about end flags used
+        void *end_flags_array = blobmsg_open_array(&b, "end_flags_used");
+        for (int i = 0; i < port->num_end_flags; i++) {
+            blobmsg_add_string(&b, NULL, port->expected_end_flags[i]);
+        }
+        blobmsg_close_array(&b, end_flags_array);
+        
+        if (result == 0) {
+            blobmsg_add_string(&b, "status", "success");
+            blobmsg_add_string(&b, "response", response.response);
+            blobmsg_add_u32(&b, "response_length", response.response_len);
+            blobmsg_add_string(&b, "end_flag_matched", response.end_flag_matched);
+            blobmsg_add_u32(&b, "response_time_ms", response.response_time_ms);
+        } else if (result == -1) {
+            blobmsg_add_string(&b, "status", "timeout");
+            blobmsg_add_string(&b, "message", "AT command timed out");
+            blobmsg_add_u32(&b, "response_time_ms", response.response_time_ms);
+            if (strlen(response.response) > 0) {
+                blobmsg_add_string(&b, "partial_response", response.response);
+            }
+        } else {
+            blobmsg_add_string(&b, "status", "error");
+            blobmsg_add_string(&b, "message", "Failed to send AT command");
+            blobmsg_add_u32(&b, "response_time_ms", response.response_time_ms);
+        }
+    }
+    
+    ubus_send_reply(ctx, req, b.head);
+    blob_buf_free(&b);
+    return UBUS_STATUS_OK;
+}
+
+static int reply_control_result(struct ubus_context *ctx,
+                                struct ubus_request_data *req, int result,
+                                const char *success, uint64_t expires_ms,
+                                const char *token)
+{
+    struct blob_buf b = {};
+    blob_buf_init(&b, 0);
+    if (result == 0) {
+        blobmsg_add_string(&b, "status", "success");
+        blobmsg_add_string(&b, "message", success);
+        if (token)
+            blobmsg_add_string(&b, "token", token);
+        if (expires_ms)
+            blobmsg_add_u64(&b, "expires_monotonic_ms", expires_ms);
+    } else if (result == -2) {
+        blobmsg_add_string(&b, "status", "busy");
+        blobmsg_add_string(&b, "message", "AT port already has an active lease");
+    } else {
+        blobmsg_add_string(&b, "status", "error");
+        blobmsg_add_string(&b, "message", "Invalid request or unknown registration");
+    }
+    ubus_send_reply(ctx, req, b.head);
+    blob_buf_free(&b);
+    return UBUS_STATUS_OK;
+}
+
+static int ubus_lease_acquire_method(struct ubus_context *ctx,
+                                     struct ubus_object *obj,
+                                     struct ubus_request_data *req,
+                                     const char *method, struct blob_attr *msg)
+{
+    struct blob_attr *tb[__CONTROL_MAX];
+    char token[96];
+    uint64_t expires_ms = 0;
+    unsigned int ttl = 60;
+    int result;
+    (void)obj; (void)method;
+    blobmsg_parse(control_policy, __CONTROL_MAX, tb, blob_data(msg), blob_len(msg));
+    if (!tb[CONTROL_AT_PORT] || !tb[CONTROL_OWNER])
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    if (tb[CONTROL_TTL])
+        ttl = blobmsg_get_u32(tb[CONTROL_TTL]);
+    result = at_lease_acquire(blobmsg_get_string(tb[CONTROL_AT_PORT]),
+                              blobmsg_get_string(tb[CONTROL_OWNER]), ttl,
+                              token, sizeof(token), &expires_ms);
+    return reply_control_result(ctx, req, result, "Lease acquired", expires_ms,
+                                result == 0 ? token : NULL);
+}
+
+static int ubus_lease_renew_method(struct ubus_context *ctx,
+                                   struct ubus_object *obj,
+                                   struct ubus_request_data *req,
+                                   const char *method, struct blob_attr *msg)
+{
+    struct blob_attr *tb[__CONTROL_MAX];
+    uint64_t expires_ms = 0;
+    unsigned int ttl = 60;
+    int result;
+    (void)obj; (void)method;
+    blobmsg_parse(control_policy, __CONTROL_MAX, tb, blob_data(msg), blob_len(msg));
+    if (!tb[CONTROL_AT_PORT] || !tb[CONTROL_OWNER] || !tb[CONTROL_TOKEN])
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    if (tb[CONTROL_TTL])
+        ttl = blobmsg_get_u32(tb[CONTROL_TTL]);
+    result = at_lease_renew(blobmsg_get_string(tb[CONTROL_AT_PORT]),
+                            blobmsg_get_string(tb[CONTROL_OWNER]),
+                            blobmsg_get_string(tb[CONTROL_TOKEN]), ttl,
+                            &expires_ms);
+    return reply_control_result(ctx, req, result, "Lease renewed", expires_ms, NULL);
+}
+
+static int ubus_lease_release_method(struct ubus_context *ctx,
+                                     struct ubus_object *obj,
+                                     struct ubus_request_data *req,
+                                     const char *method, struct blob_attr *msg)
+{
+    struct blob_attr *tb[__CONTROL_MAX];
+    int result;
+    (void)obj; (void)method;
+    blobmsg_parse(control_policy, __CONTROL_MAX, tb, blob_data(msg), blob_len(msg));
+    if (!tb[CONTROL_AT_PORT] || !tb[CONTROL_OWNER] || !tb[CONTROL_TOKEN])
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    result = at_lease_release(blobmsg_get_string(tb[CONTROL_AT_PORT]),
+                              blobmsg_get_string(tb[CONTROL_OWNER]),
+                              blobmsg_get_string(tb[CONTROL_TOKEN]));
+    return reply_control_result(ctx, req, result, "Lease released", 0, NULL);
+}
+
+static int ubus_urc_register_method(struct ubus_context *ctx,
+                                    struct ubus_object *obj,
+                                    struct ubus_request_data *req,
+                                    const char *method, struct blob_attr *msg)
+{
+    struct blob_attr *tb[__CONTROL_MAX];
+    int result;
+    (void)obj; (void)method;
+    blobmsg_parse(control_policy, __CONTROL_MAX, tb, blob_data(msg), blob_len(msg));
+    if (!tb[CONTROL_AT_PORT] || !tb[CONTROL_OWNER] || !tb[CONTROL_URC_ID] ||
+        !tb[CONTROL_PREFIX])
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    result = at_urc_register(blobmsg_get_string(tb[CONTROL_AT_PORT]),
+                             blobmsg_get_string(tb[CONTROL_OWNER]),
+                             blobmsg_get_string(tb[CONTROL_URC_ID]),
+                             blobmsg_get_string(tb[CONTROL_PREFIX]));
+    return reply_control_result(ctx, req, result, "URC registered", 0, NULL);
+}
+
+static int ubus_urc_unregister_method(struct ubus_context *ctx,
+                                      struct ubus_object *obj,
+                                      struct ubus_request_data *req,
+                                      const char *method, struct blob_attr *msg)
+{
+    struct blob_attr *tb[__CONTROL_MAX];
+    int result;
+    (void)obj; (void)method;
+    blobmsg_parse(control_policy, __CONTROL_MAX, tb, blob_data(msg), blob_len(msg));
+    if (!tb[CONTROL_AT_PORT] || !tb[CONTROL_OWNER] || !tb[CONTROL_URC_ID])
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    result = at_urc_unregister(blobmsg_get_string(tb[CONTROL_AT_PORT]),
+                               blobmsg_get_string(tb[CONTROL_OWNER]),
+                               blobmsg_get_string(tb[CONTROL_URC_ID]));
+    return reply_control_result(ctx, req, result, "URC unregistered", 0, NULL);
+}
+
+static int ubus_urc_list_method(struct ubus_context *ctx, struct ubus_object *obj,
+                                struct ubus_request_data *req, const char *method,
+                                struct blob_attr *msg)
+{
+    struct blob_buf b = {};
+    at_urc_registration_t *urc;
+    void *array;
+    (void)obj; (void)method; (void)msg;
+    blob_buf_init(&b, 0);
+    array = blobmsg_open_array(&b, "registrations");
+    pthread_mutex_lock(&g_daemon_ctx.control_mutex);
+    for (urc = g_daemon_ctx.urcs; urc; urc = urc->next) {
+        void *entry = blobmsg_open_table(&b, NULL);
+        blobmsg_add_string(&b, "port", urc->port);
+        blobmsg_add_string(&b, "owner", urc->owner);
+        blobmsg_add_string(&b, "urc_id", urc->urc_id);
+        blobmsg_add_string(&b, "prefix", urc->prefix);
+        blobmsg_close_table(&b, entry);
+    }
+    pthread_mutex_unlock(&g_daemon_ctx.control_mutex);
+    blobmsg_close_array(&b, array);
+    ubus_send_reply(ctx, req, b.head);
+    blob_buf_free(&b);
+    return UBUS_STATUS_OK;
+}
+
+// Ubus method: list
+static int ubus_list_method(struct ubus_context *ctx, struct ubus_object *obj,
+                           struct ubus_request_data *req, const char *method,
+                           struct blob_attr *msg) {
+    struct blob_buf b = {};
+    blob_buf_init(&b, 0);
+    
+    void *array = blobmsg_open_array(&b, "ports");
+    
+    pthread_mutex_lock(&g_daemon_ctx.ports_mutex);
+    at_port_instance_t *current = g_daemon_ctx.ports;
+    
+    while (current) {
+        uint64_t restart_epoch;
+        uint64_t line_sequence;
+        int is_open;
+        int fd;
+        int baudrate;
+        int databits;
+        int parity;
+        int stopbits;
+        void *port_obj = blobmsg_open_table(&b, NULL);
+        blobmsg_add_string(&b, "port", current->port_path);
+        pthread_mutex_lock(&current->state_mutex);
+        is_open = current->is_open;
+        fd = current->fd;
+        baudrate = current->configured_baudrate;
+        databits = current->configured_databits;
+        parity = current->configured_parity;
+        stopbits = current->configured_stopbits;
+        pthread_mutex_unlock(&current->state_mutex);
+        blobmsg_add_u32(&b, "is_open", is_open);
+        if (is_open) {
+            blobmsg_add_u32(&b, "fd", fd);
+            if (baudrate > 0) {
+                blobmsg_add_u32(&b, "baudrate", baudrate);
+                blobmsg_add_u32(&b, "databits", databits);
+                blobmsg_add_u32(&b, "parity", parity);
+                blobmsg_add_u32(&b, "stopbits", stopbits);
+            }
+        } else {
+            // Check if file exists for closed ports
+            if (access(current->port_path, F_OK) == 0) {
+                blobmsg_add_string(&b, "file_status", "exists");
+            } else {
+                blobmsg_add_string(&b, "file_status", "missing");
+            }
+        }
+        blobmsg_add_u32(&b, "last_check", (uint32_t)current->last_check_time);
+        at_port_event_state_snapshot(current, &restart_epoch, &line_sequence);
+        blobmsg_add_u64(&b, "restart_epoch", restart_epoch);
+        blobmsg_add_u64(&b, "line_sequence", line_sequence);
+        pthread_mutex_lock(&g_daemon_ctx.line_events.mutex);
+        blobmsg_add_u64(&b, "event_drop_count",
+                        g_daemon_ctx.line_events.drop_count);
+        pthread_mutex_unlock(&g_daemon_ctx.line_events.mutex);
+        blobmsg_close_table(&b, port_obj);
+        current = current->next;
+    }
+    
+    pthread_mutex_unlock(&g_daemon_ctx.ports_mutex);
+    blobmsg_close_array(&b, array);
+    
+    ubus_send_reply(ctx, req, b.head);
+    blob_buf_free(&b);
+    return UBUS_STATUS_OK;
+}
+
+// Ubus method: close
+static int ubus_close_method(struct ubus_context *ctx, struct ubus_object *obj,
+                            struct ubus_request_data *req, const char *method,
+                            struct blob_attr *msg) {
+    struct blob_attr *tb[__CLOSE_MAX];
+    const char *at_port;
+    
+    blobmsg_parse(close_policy, __CLOSE_MAX, tb, blob_data(msg), blob_len(msg));
+    
+    if (!tb[CLOSE_AT_PORT]) {
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    }
+    
+    at_port = blobmsg_get_string(tb[CLOSE_AT_PORT]);
+    
+    at_port_instance_t *port = find_port_instance(at_port);
+    
+    struct blob_buf b = {};
+    blob_buf_init(&b, 0);
+    
+    if (port) {
+        close_at_port(port);
+        destroy_port_instance(port);
+        blobmsg_add_string(&b, "status", "success");
+        blobmsg_add_string(&b, "port", at_port);
+        blobmsg_add_string(&b, "message", "Port closed and removed");
+    } else {
+        blobmsg_add_string(&b, "status", "error");
+        blobmsg_add_string(&b, "message", "Port not found");
+    }
+    
+    ubus_send_reply(ctx, req, b.head);
+    blob_buf_free(&b);
+    return UBUS_STATUS_OK;
+}
+
+// Ubus methods table
+static const struct ubus_method at_daemon_methods[] = {
+    UBUS_METHOD("open", ubus_open_method, open_policy),
+    UBUS_METHOD("sendat", ubus_sendat_method, sendat_policy),
+    UBUS_METHOD_NOARG("list", ubus_list_method),
+    UBUS_METHOD("close", ubus_close_method, close_policy),
+    UBUS_METHOD("lease_acquire", ubus_lease_acquire_method, control_policy),
+    UBUS_METHOD("lease_renew", ubus_lease_renew_method, control_policy),
+    UBUS_METHOD("lease_release", ubus_lease_release_method, control_policy),
+    UBUS_METHOD("urc_register", ubus_urc_register_method, control_policy),
+    UBUS_METHOD("urc_unregister", ubus_urc_unregister_method, control_policy),
+    UBUS_METHOD_NOARG("urc_list", ubus_urc_list_method),
+};
+
+static struct ubus_object_type at_daemon_object_type =
+    UBUS_OBJECT_TYPE("at-daemon", at_daemon_methods);
+
+static struct ubus_object at_daemon_object = {
+    .name = "at-daemon",
+    .type = &at_daemon_object_type,
+    .methods = at_daemon_methods,
+    .n_methods = ARRAY_SIZE(at_daemon_methods),
+};
+
+static void server_main(void) {
+    uloop_init();
+    if (at_line_events_register_uloop(&g_daemon_ctx.line_events) != 0) {
+        fprintf(stderr, "Failed to register AT line event pipe\n");
+        return;
+    }
+    
+    g_daemon_ctx.ctx = ubus_connect(NULL);
+    if (!g_daemon_ctx.ctx) {
+        fprintf(stderr, "Failed to connect to ubus\n");
+        return;
+    }
+    
+    ubus_add_uloop(g_daemon_ctx.ctx);
+    
+    int ret = ubus_add_object(g_daemon_ctx.ctx, &at_daemon_object);
+    if (ret) {
+        fprintf(stderr, "Failed to add object: %s\n", ubus_strerror(ret));
+        return;
+    }
+    
+    g_daemon_ctx.obj = at_daemon_object;
+    
+    // Start port monitoring thread
+    start_port_monitor();
+    
+    printf("ubus-at-daemon started\n");
+    uloop_run();
+    
+    // Stop port monitoring thread
+    stop_port_monitor();
+    
+    ubus_free(g_daemon_ctx.ctx);
+    uloop_done();
+}
+
+int main(int argc, char **argv) {
+    struct timespec started;
+    // Initialize global context
+    memset(&g_daemon_ctx, 0, sizeof(g_daemon_ctx));
+    clock_gettime(CLOCK_REALTIME, &started);
+    g_daemon_ctx.daemon_epoch = (uint64_t)started.tv_sec * 1000000000U +
+                                (uint64_t)started.tv_nsec;
+    g_daemon_ctx.ports = NULL;
+    pthread_mutex_init(&g_daemon_ctx.ports_mutex, NULL);
+    pthread_mutex_init(&g_daemon_ctx.control_mutex, NULL);
+    if (at_line_events_init(&g_daemon_ctx.line_events) != 0) {
+        fprintf(stderr, "Failed to initialize AT line event queue\n");
+        pthread_mutex_destroy(&g_daemon_ctx.control_mutex);
+        pthread_mutex_destroy(&g_daemon_ctx.ports_mutex);
+        return 1;
+    }
+    
+    server_main();
+    
+    // Cleanup
+    pthread_mutex_lock(&g_daemon_ctx.ports_mutex);
+    at_port_instance_t *current = g_daemon_ctx.ports;
+    while (current) {
+        at_port_instance_t *next = current->next;
+        destroy_port_instance(current);
+        current = next;
+    }
+    pthread_mutex_unlock(&g_daemon_ctx.ports_mutex);
+    
+    pthread_mutex_destroy(&g_daemon_ctx.ports_mutex);
+    at_line_events_cleanup(&g_daemon_ctx.line_events);
+    at_control_cleanup();
+    pthread_mutex_destroy(&g_daemon_ctx.control_mutex);
+    
+    return 0;
+}
