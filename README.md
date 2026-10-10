@@ -44,7 +44,6 @@
 |[smartdns](https://github.com/pymumu/openwrt-smartdns)|master|pymumu|smartdns|single|20260701|
 |[luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)|v5|sbwml|mosdns|multi|20260913|
 |[v2ray-geodata](https://github.com/sbwml/v2ray-geodata)|master|sbwml|mosdns 依赖|single|20250125|
-|[luci-app-modem](https://github.com/Siriling/5G-Modem-Support)|f0380e8bbca2a41bf8978fa2c9ce114d09381cbf|Siriling|4G/5G Modem 拨号|multi|20251108|
 |[luci-app-modemband](https://github.com/4IceG/luci-app-modemband)|main|4IceG|4G/5G 频段锁定|multi|20260517|
 |[luci-app-3ginfo-lite](https://github.com/4IceG/luci-app-3ginfo-lite)|main|4IceG|4G/5G 信号展示|multi|20261007|
 |[luci-app-sms-tool-js](https://github.com/4IceG/luci-app-sms-tool-js)|main|4IceG|短信收发|multi|20260925|
@@ -55,4 +54,3 @@
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|main|gdy666|lucky 插件|multi|20261005|
 |[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|main|EasyTier|EasyTier 插件|multi|20260925|
 |[luci-app-oaf](https://github.com/destan19/OpenAppFilter)|master|destan19|应用过滤|multi|20260924|
-|[qmodem](https://github.com/FUjr/QModem)|main|FUjr|5G/4G Modem 管理套件（应用+LuCI+内核驱动，整库 33 包）|project|20260919|
