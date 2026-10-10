@@ -45,6 +45,41 @@ jobs:
           rm -rf __pycache__
           echo "message=$(date)" >> $GITHUB_OUTPUT
 
+      - name: Verify Feed (SDK Build)
+        if: steps.update.outcome == 'success'
+        run: |
+          set -e
+          BRANCH="${{fromJSON(matrix.info).BRANCH}}"
+          VER="${BRANCH#openwrt-}"
+          BASE="https://downloads.openwrt.org/releases"
+          # 定位该版本系列最新 release（如 24.10.2）
+          SERIES="$(curl -fsSL "$BASE/" | grep -oE "href=\"${VER//./\\.}\\.[0-9]+/\"" | sed 's/href="//;s/"//;s|/$||' | sort -V | tail -1)"
+          [ -n "$SERIES" ] || { echo "!! 未找到 $VER 系列 release"; exit 1; }
+          echo "SDK series: $SERIES"
+          SDK_FILE="$(curl -fsSL "$BASE/$SERIES/targets/x86/64/" | grep -oE 'href="openwrt-sdk-[^"]+\.tar\.(xz|zst)"' | sed 's/href="//;s/"//' | sort -V | tail -1)"
+          [ -n "$SDK_FILE" ] || { echo "!! 未找到 $SERIES 的 x86/64 SDK"; exit 1; }
+          echo "SDK file: $SDK_FILE"
+          curl -fsSL -o "$SDK_FILE" "$BASE/$SERIES/targets/x86/64/$SDK_FILE"
+          # 新版 SDK 为 .tar.zst，旧版为 .tar.xz，按格式解压
+          case "$SDK_FILE" in
+            *.tar.zst) tar --zstd -xf "$SDK_FILE" ;;
+            *)         tar -xJf "$SDK_FILE" ;;
+          esac
+          rm -f "$SDK_FILE"
+          SDK_DIR="$(find . -maxdepth 1 -type d -name 'openwrt-sdk-*' | head -1)"
+          [ -n "$SDK_DIR" ] || { echo "!! SDK 解压失败"; exit 1; }
+          cd "$SDK_DIR"
+          echo "src-link openwrtpackages $GITHUB_WORKSPACE" >> feeds.conf
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          make defconfig
+          # 门禁编译：轻量 C 包 + luci 包（验证 multi 拆分与 luci 依赖）
+          make -j"$(nproc)" package/tcping/compile
+          make -j"$(nproc)" package/luci-app-smartdns/compile
+          # 清理 SDK，避免被 git-auto-commit 一并提交
+          cd "$GITHUB_WORKSPACE"
+          rm -rf "$SDK_DIR"
+
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
