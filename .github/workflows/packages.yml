@@ -80,14 +80,15 @@ jobs:
           src-git luci https://github.com/openwrt/luci.git;openwrt-${VER}
           src-git routing https://github.com/openwrt/routing.git;openwrt-${VER}
           src-git telephony https://github.com/openwrt/telephony.git;openwrt-${VER}
-          src-link openwrtpackages $GITHUB_WORKSPACE
+          src-link zz-openwrtpackages $GITHUB_WORKSPACE
           EOF
           ./scripts/feeds update -a
           ./scripts/feeds install -a
           make defconfig
-          # 门禁编译：轻量 C 包 + luci 包（验证 multi 拆分与 luci 依赖）
+          # 门禁编译：tcping（轻量 C 包）+ mosdns（Go 包，验证本 feed golang 链）。
+          # 不用 luci-app-smartdns：其依赖链（luci-base 全家桶 + 官方 smartdns）在 SDK 精简环境下误报率高
           make -j"$(nproc)" package/tcping/compile
-          make -j"$(nproc)" package/luci-app-smartdns/compile
+          make -j"$(nproc)" package/mosdns/compile
           # 清理 SDK 临时目录
           rm -rf "$RUNNER_TEMP/sdk"
 
