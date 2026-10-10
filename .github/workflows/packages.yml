@@ -73,7 +73,15 @@ jobs:
           SDK_DIR="$(find "$RUNNER_TEMP/sdk" -maxdepth 1 -type d -name 'openwrt-sdk-*' | head -1)"
           [ -n "$SDK_DIR" ] || { echo "!! SDK 解压失败"; exit 1; }
           cd "$SDK_DIR"
-          echo "src-link openwrtpackages $GITHUB_WORKSPACE" >> feeds.conf
+          # SDK 默认不含官方 feeds，写入完整 feeds.conf：
+          # 官方 packages/luci/routing/telephony（对应版本分支）+ 本仓库（放最后，覆盖同名包）
+          cat > feeds.conf <<EOF
+          src-git packages https://github.com/openwrt/packages.git;openwrt-${VER}
+          src-git luci https://github.com/openwrt/luci.git;openwrt-${VER}
+          src-git routing https://github.com/openwrt/routing.git;openwrt-${VER}
+          src-git telephony https://github.com/openwrt/telephony.git;openwrt-${VER}
+          src-link openwrtpackages $GITHUB_WORKSPACE
+          EOF
           ./scripts/feeds update -a
           ./scripts/feeds install -a
           make defconfig
