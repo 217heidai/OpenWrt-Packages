@@ -1,10 +1,13 @@
-#!/bin/sh
+#!/bin/bash
+#
+# Copyright (C) 2018, 2020 Jeffery To
+#
+# SPDX-License-Identifier: GPL-2.0-only
 
 me=go-gcc-helper
 name="${0##*/}"
 
 log() {
-	# shellcheck disable=SC2039
 	local IFS=" "
 	printf '%s\n' "$me: $*"
 }
