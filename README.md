@@ -55,3 +55,4 @@
 |[luci-app-lucky](https://github.com/gdy666/luci-app-lucky)|main|gdy666|lucky 插件|multi|20261005|
 |[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)|main|EasyTier|EasyTier 插件|multi|20260925|
 |[luci-app-oaf](https://github.com/destan19/OpenAppFilter)|master|destan19|应用过滤|multi|20260924|
+|[qmodem](https://github.com/FUjr/QModem)|main|FUjr|5G/4G Modem 管理套件（应用+LuCI+内核驱动，整库 33 包）|project|20261010|
