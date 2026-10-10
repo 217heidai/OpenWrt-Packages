@@ -51,12 +51,13 @@ jobs:
           set -e
           BRANCH="${{fromJSON(matrix.info).BRANCH}}"
           VER="${BRANCH#openwrt-}"
-          BASE="https://downloads.openwrt.org/releases"
-          # 定位该版本系列最新 release（如 24.10.2）
+          # ImmortalWrt 官方下载站（SDK 命名 immortalwrt-sdk-*）
+          BASE="https://dl.wrt.moe/releases"
+          # 定位该版本系列最新 release（如 25.12.2）
           SERIES="$(curl -fsSL "$BASE/" | grep -oE "href=\"${VER//./\\.}\\.[0-9]+/\"" | sed 's/href="//;s/"//;s|/$||' | sort -V | tail -1)"
           [ -n "$SERIES" ] || { echo "!! 未找到 $VER 系列 release"; exit 1; }
           echo "SDK series: $SERIES"
-          SDK_FILE="$(curl -fsSL "$BASE/$SERIES/targets/x86/64/" | grep -oE 'href="openwrt-sdk-[^"]+\.tar\.(xz|zst)"' | sed 's/href="//;s/"//' | sort -V | tail -1)"
+          SDK_FILE="$(curl -fsSL "$BASE/$SERIES/targets/x86/64/" | grep -oE 'href="immortalwrt-sdk-[^"]+\.tar\.(xz|zst)"' | sed 's/href="//;s/"//' | sort -V | tail -1)"
           [ -n "$SDK_FILE" ] || { echo "!! 未找到 $SERIES 的 x86/64 SDK"; exit 1; }
           echo "SDK file: $SDK_FILE"
           curl -fsSL -o "$SDK_FILE" "$BASE/$SERIES/targets/x86/64/$SDK_FILE"
@@ -70,18 +71,18 @@ jobs:
             *)         tar -xJf "$SDK_FILE" -C "$RUNNER_TEMP/sdk" ;;
           esac
           rm -f "$SDK_FILE"
-          SDK_DIR="$(find "$RUNNER_TEMP/sdk" -maxdepth 1 -type d -name 'openwrt-sdk-*' | head -1)"
+          SDK_DIR="$(find "$RUNNER_TEMP/sdk" -maxdepth 1 -type d -name 'immortalwrt-sdk-*' | head -1)"
           [ -n "$SDK_DIR" ] || { echo "!! SDK 解压失败"; exit 1; }
           cd "$SDK_DIR"
           # SDK 默认不含官方 feeds，写入完整 feeds.conf：
           # 本仓库放最前：feeds install 对同名包先到先得（行序），
           # 保证 golang/smartdns/mosdns 等用本 feed 版本；
-          # 官方 packages/luci/routing/telephony（对应版本分支）随后。
+          # ImmortalWrt packages/luci + 官方 routing/telephony（对应版本分支）随后。
           # feed 名只能用 [A-Za-z0-9_]，zz_ 前缀在构建扫描阶段也排官方之后。
           cat > feeds.conf <<EOF
           src-link zz_openwrtpackages $GITHUB_WORKSPACE
-          src-git packages https://github.com/openwrt/packages.git;openwrt-${VER}
-          src-git luci https://github.com/openwrt/luci.git;openwrt-${VER}
+          src-git packages https://github.com/immortalwrt/packages.git;openwrt-${VER}
+          src-git luci https://github.com/immortalwrt/luci.git;openwrt-${VER}
           src-git routing https://github.com/openwrt/routing.git;openwrt-${VER}
           src-git telephony https://github.com/openwrt/telephony.git;openwrt-${VER}
           EOF
