@@ -30,11 +30,20 @@ class PACKAGE(object):
             if os.path.exists(path):
                 shutil.rmtree(path)
             
-            # 获取分支
-            repository = Repo.clone_from(repo, path)
-            
-            # 切换指定分支
-            repository.git.checkout(self.branch)
+            if self.type == 'sparse':
+                # 稀疏克隆官方大仓库的指定子目录（如 openwrt/packages 的 lang/golang）：
+                # 官方 25.12 分支的 Go 构建框架已重构，sbwml 旧框架不兼容，
+                # golang 必须跟随官方 openwrt-25.12 分支的 lang/golang
+                repository = Repo.clone_from(
+                    repo, path,
+                    multi_options=["--depth", "1", "--filter=blob:none", "--sparse", "-b", self.branch]
+                )
+                repository.git.sparse_checkout("set", "lang/golang")
+            else:
+                # 获取分支
+                repository = Repo.clone_from(repo, path)
+                # 切换指定分支
+                repository.git.checkout(self.branch)
             
             # 获取分支更新信息
             log = repository.git.log(date='format:%Y%m%d', max_count=1)
@@ -73,6 +82,10 @@ class PACKAGE(object):
             if self.name == 'luci-app-store': # 特殊处理
                 tmp += '/luci'
             dirList = self.__ListDir(tmp)
+        elif self.type == 'sparse':
+            # 稀疏克隆后包内容位于 tmp/lang/golang（官方仓库子目录结构）
+            self.__RemoveDir(tmp)
+            dirList.append(tmp + '/lang/golang')
         else:
             self.__RemoveDir(tmp)
             dirList.append(tmp)
@@ -116,15 +129,15 @@ def CreatReadme(fileName, packageList):
     
     with open(fileName, 'a') as f:
         f.write("# OpenWrt-Packages\n")
-        f.write("常用 OpenWrt 软件包收集\n")
+        f.write("常用 ImmortalWrt 软件包收集\n")
         f.write("\n")
         f.write("## 注意事项\n")
         f.write("\n")
-        f.write("1. 适用于 OpenWrt 25.12 版本。\n")
+        f.write("1. 适用于 ImmortalWrt 25.12 版本。\n")
         f.write("\n")
         f.write("## 作为 Feed 引用（推荐）\n")
         f.write("\n")
-        f.write("在 OpenWrt 源码根目录 `feeds.conf`（或 `feeds.conf.default`）**开头**插入一行：\n")
+        f.write("在 ImmortalWrt 源码根目录 `feeds.conf`（或 `feeds.conf.default`）**开头**插入一行：\n")
         f.write("\n")
         f.write("    src-git zz_openwrtpackages https://github.com/%s.git;openwrt-25.12\n" % repo)
         f.write("\n")
@@ -137,9 +150,9 @@ def CreatReadme(fileName, packageList):
         f.write("\n")
         f.write("### Feed 使用注意事项\n")
         f.write("\n")
-        f.write("1. 必须使用与分支对应的 OpenWrt 版本编译（本分支对应 25.12）。\n")
-        f.write("2. 本 feed 部分包与官方 packages/luci feed 同名（如 golang、smartdns、mosdns、xray-core、luci-theme-argon、luci-app-smartdns 等），`feeds install` 对同名包按 `feeds.conf` 行序先到先得，本行必须放在官方 feeds **之前**才能让本 feed 版本生效；feed 名只能使用 `[A-Za-z0-9_]`（勿加连字符），`zz_` 前缀可保证多 feed 并存时构建扫描也排在官方之后。\n")
-        f.write("3. 官方 packages / luci / routing feed 必须保留，`luci-*` 等包依赖 `luci-base`。\n")
+        f.write("1. 必须使用与分支对应的 ImmortalWrt 版本编译（本分支对应 25.12）。\n")
+        f.write("2. 本 feed 部分包与 ImmortalWrt 的 packages/luci feed 同名（如 golang、smartdns、mosdns、xray-core、luci-theme-argon、luci-app-smartdns 等），`feeds install` 对同名包按 `feeds.conf` 行序先到先得，本行必须放在官方 feeds **之前**才能让本 feed 版本生效；feed 名只能使用 `[A-Za-z0-9_]`（勿加连字符），`zz_` 前缀可保证多 feed 并存时构建扫描也排在官方之后。\n")
+        f.write("3. ImmortalWrt 的 packages / luci / routing feed 必须保留，`luci-*` 等包依赖 `luci-base`。\n")
         f.write("4. 本地调试可用 `src-link` 直连本仓库：`src-link zz_openwrtpackages /本地路径/OpenWrt-Packages`。\n")
         f.write("\n")
         f.write("## 软件清单\n")
