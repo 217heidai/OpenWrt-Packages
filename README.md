@@ -7,13 +7,13 @@
 
 ## 作为 Feed 引用（推荐）
 
-在 OpenWrt 源码根目录 `feeds.conf`（或 `feeds.conf.default`）末尾追加一行：
+在 OpenWrt 源码根目录 `feeds.conf`（或 `feeds.conf.default`）**开头**插入一行：
 
-    src-git zz-openwrtpackages https://github.com/217heidai/OpenWrt-Packages.git;openwrt-25.12
+    src-git zz_openwrtpackages https://github.com/217heidai/OpenWrt-Packages.git;openwrt-25.12
 
 然后执行：
 
-    ./scripts/feeds update zz-openwrtpackages
+    ./scripts/feeds update zz_openwrtpackages
     ./scripts/feeds install -a
 
 之后即可在 `make menuconfig` 中按包名选择安装。
@@ -21,9 +21,9 @@
 ### Feed 使用注意事项
 
 1. 必须使用与分支对应的 OpenWrt 版本编译（本分支对应 25.12）。
-2. 本 feed 部分包与官方 packages/luci feed 同名（如 golang、smartdns、mosdns、xray-core、luci-theme-argon、luci-app-smartdns 等），feed 名 `zz-openwrtpackages` 的 zz 前缀确保其按字母序排在官方 feed 之后、覆盖官方同名包；建议仍将本行放在 `feeds.conf` 最后。
+2. 本 feed 部分包与官方 packages/luci feed 同名（如 golang、smartdns、mosdns、xray-core、luci-theme-argon、luci-app-smartdns 等），`feeds install` 对同名包按 `feeds.conf` 行序先到先得，本行必须放在官方 feeds **之前**才能让本 feed 版本生效；feed 名只能使用 `[A-Za-z0-9_]`（勿加连字符），`zz_` 前缀可保证多 feed 并存时构建扫描也排在官方之后。
 3. 官方 packages / luci / routing feed 必须保留，`luci-*` 等包依赖 `luci-base`。
-4. 本地调试可用 `src-link` 直连本仓库：`src-link zz-openwrtpackages /本地路径/OpenWrt-Packages`。
+4. 本地调试可用 `src-link` 直连本仓库：`src-link zz_openwrtpackages /本地路径/OpenWrt-Packages`。
 
 ## 软件清单
 
