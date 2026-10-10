@@ -60,13 +60,17 @@ jobs:
           [ -n "$SDK_FILE" ] || { echo "!! 未找到 $SERIES 的 x86/64 SDK"; exit 1; }
           echo "SDK file: $SDK_FILE"
           curl -fsSL -o "$SDK_FILE" "$BASE/$SERIES/targets/x86/64/$SDK_FILE"
+          # 解压到工作区外（$RUNNER_TEMP）：src-link 指向 $GITHUB_WORKSPACE，
+          # 若 SDK 在工作区内会形成文件系统环（File system loop），导致包扫描失败
+          rm -rf "$RUNNER_TEMP/sdk"
+          mkdir -p "$RUNNER_TEMP/sdk"
           # 新版 SDK 为 .tar.zst，旧版为 .tar.xz，按格式解压
           case "$SDK_FILE" in
-            *.tar.zst) tar --zstd -xf "$SDK_FILE" ;;
-            *)         tar -xJf "$SDK_FILE" ;;
+            *.tar.zst) tar --zstd -xf "$SDK_FILE" -C "$RUNNER_TEMP/sdk" ;;
+            *)         tar -xJf "$SDK_FILE" -C "$RUNNER_TEMP/sdk" ;;
           esac
           rm -f "$SDK_FILE"
-          SDK_DIR="$(find . -maxdepth 1 -type d -name 'openwrt-sdk-*' | head -1)"
+          SDK_DIR="$(find "$RUNNER_TEMP/sdk" -maxdepth 1 -type d -name 'openwrt-sdk-*' | head -1)"
           [ -n "$SDK_DIR" ] || { echo "!! SDK 解压失败"; exit 1; }
           cd "$SDK_DIR"
           echo "src-link openwrtpackages $GITHUB_WORKSPACE" >> feeds.conf
@@ -76,9 +80,8 @@ jobs:
           # 门禁编译：轻量 C 包 + luci 包（验证 multi 拆分与 luci 依赖）
           make -j"$(nproc)" package/tcping/compile
           make -j"$(nproc)" package/luci-app-smartdns/compile
-          # 清理 SDK，避免被 git-auto-commit 一并提交
-          cd "$GITHUB_WORKSPACE"
-          rm -rf "$SDK_DIR"
+          # 清理 SDK 临时目录
+          rm -rf "$RUNNER_TEMP/sdk"
 
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v7
