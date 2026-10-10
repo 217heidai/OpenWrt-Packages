@@ -64,6 +64,10 @@ class PACKAGE(object):
             shutil.rmtree(tmp)
         
         self.date = self.__Download(self.repo, tmp)
+        if self.date is None:
+            # B3: 拉取/切换失败，保留旧目录与旧日期，避免产生缺包提交
+            print("!! %s: 拉取失败，保留旧版本" % self.name)
+            return
         dirList = []
         if self.type == 'multi':
             if self.name == 'luci-app-store': # 特殊处理
@@ -72,6 +76,11 @@ class PACKAGE(object):
         else:
             self.__RemoveDir(tmp)
             dirList.append(tmp)
+        
+        if not dirList:
+            # B3: 上游仓库结构异常（未取到任何包目录），保留旧目录
+            print("!! %s: 未取到包目录，保留旧版本" % self.name)
+            return
         
         for dir in dirList:
             package = path + dir[dir.rfind('/'):]
@@ -100,6 +109,8 @@ def GetPackageList(fileName):
     return packageList
 
 def CreatReadme(fileName, packageList):
+    # B1: feed 引用章节中的仓库地址，CI 环境下自动填充为真实仓库
+    repo = os.environ.get('GITHUB_REPOSITORY', 'YOUR_GITHUB_USERNAME/OpenWrt-Packages')
     if os.path.exists(fileName):
         os.remove(fileName)
     
@@ -110,6 +121,26 @@ def CreatReadme(fileName, packageList):
         f.write("## 注意事项\n")
         f.write("\n")
         f.write("1. 适用于 OpenWrt 23.05 版本。\n")
+        f.write("\n")
+        f.write("## 作为 Feed 引用（推荐）\n")
+        f.write("\n")
+        f.write("在 OpenWrt 源码根目录 `feeds.conf`（或 `feeds.conf.default`）末尾追加一行：\n")
+        f.write("\n")
+        f.write("    src-git openwrtpackages https://github.com/%s.git;openwrt-23.05\n" % repo)
+        f.write("\n")
+        f.write("然后执行：\n")
+        f.write("\n")
+        f.write("    ./scripts/feeds update openwrtpackages\n")
+        f.write("    ./scripts/feeds install -a\n")
+        f.write("\n")
+        f.write("之后即可在 `make menuconfig` 中按包名选择安装。\n")
+        f.write("\n")
+        f.write("### Feed 使用注意事项\n")
+        f.write("\n")
+        f.write("1. 必须使用与分支对应的 OpenWrt 版本编译（本分支对应 23.05）。\n")
+        f.write("2. 本 feed 部分包与官方 packages/luci feed 同名（如 golang、smartdns、mosdns、xray-core、luci-theme-argon、luci-app-smartdns 等），OpenWrt 按 feed 安装顺序后者覆盖前者，请将本行放在 `feeds.conf` 最后。\n")
+        f.write("3. 官方 packages / luci / routing feed 必须保留，`luci-*` 等包依赖 `luci-base`。\n")
+        f.write("4. 本地调试可用 `src-link` 直连本仓库：`src-link openwrtpackages /本地路径/OpenWrt-Packages`。\n")
         f.write("\n")
         f.write("## 软件清单\n")
         f.write("\n")
@@ -126,11 +157,8 @@ def Entry():
     if not os.path.exists(tmp):
         os.mkdir(tmp)
 
-    # 删除所有目录，强制同步最新源码
-    for entry in os.scandir(pwd):
-        if entry.is_dir() and entry.path != pwd and entry.name not in ('.git', '.github', 'patch'):
-            shutil.rmtree(entry.path)
-
+    # B3: 不再全局删除包目录，改为逐包更新——clone/切换成功后才覆盖旧目录，
+    # 单个包拉取失败时保留旧版本，避免产生缺包提交。
     packageList = GetPackageList(pwd + '/README.md')
     for package in packageList:
         package.update(tmp, pwd)
