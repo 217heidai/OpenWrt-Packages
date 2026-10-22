@@ -163,6 +163,15 @@ def Entry():
     for package in packageList:
         package.update(tmp, pwd)
 
+    # 同步后强制清理：jerrykuku/luci-theme-argon 上游自带 compat/luci-app-argon-config
+    # 空壳包，会与本 feed 独立的 luci-app-argon-config 重复注册（同名包先到先得冲突）；
+    # 该目录每次同步都会被上游重新带回来，这里无条件删除并顺带移除空的 compat 目录。
+    _compat = os.path.join(pwd, 'luci-theme-argon', 'compat', 'luci-app-argon-config')
+    shutil.rmtree(_compat, ignore_errors=True)
+    _compat_root = os.path.join(pwd, 'luci-theme-argon', 'compat')
+    if os.path.isdir(_compat_root) and not os.listdir(_compat_root):
+        os.rmdir(_compat_root)
+
     CreatReadme(pwd + '/README.md', packageList)
     
     if os.path.exists(tmp):
