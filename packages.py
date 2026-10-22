@@ -172,6 +172,18 @@ def Entry():
     if os.path.isdir(_compat_root) and not os.listdir(_compat_root):
         os.rmdir(_compat_root)
 
+    # 包内适配补丁：上游同步会用 clone 结果覆盖包目录，这里在每次同步后重新打补丁。
+    # xray-core 上游 go.mod 要求 go>=1.27；全局默认版本改动不会链式构建具体 host
+    # 编译器，因此显式钉到官方 golang1.27/host，强制构建并把 PATH 指向真实编译器。
+    _xray_mk = os.path.join(pwd, 'xray-core', 'Makefile')
+    if os.path.isfile(_xray_mk):
+        with open(_xray_mk, 'r', encoding='utf-8') as _f:
+            _mk = _f.read()
+        _mk = _mk.replace('PKG_BUILD_DEPENDS:=golang/host',
+                          'PKG_BUILD_DEPENDS:=golang1.27/host')
+        with open(_xray_mk, 'w', encoding='utf-8') as _f:
+            _f.write(_mk)
+
     CreatReadme(pwd + '/README.md', packageList)
     
     if os.path.exists(tmp):
