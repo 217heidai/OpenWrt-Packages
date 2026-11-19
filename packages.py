@@ -103,7 +103,7 @@ def GetPackageList(fileName):
                 l = list(map(lambda x: x.strip(), line[1:].split('|')))
                 if l[0].find('(') > 0 and l[0].find(')') > 0 and len(l) > 4:
                     url = l[0][l[0].find('(')+1:l[0].find(')')]
-                    matchObj1 = re.match('(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?', url)
+                    matchObj1 = re.match(r'(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?', url)
                     if matchObj1:
                         packageList.append(PACKAGE(l))
     return packageList
