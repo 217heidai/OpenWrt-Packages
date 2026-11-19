@@ -109,6 +109,9 @@ msgstr "SOCKS-сервер"
 msgid "Current Node"
 msgstr "Активный сервер"
 
+msgid "Port Status"
+msgstr "Состояние портов"
+
 msgid "Listen Port"
 msgstr "Порт прослушивания"
 
@@ -604,6 +607,9 @@ msgstr "Размер окна приёма соединения QUIC"
 
 msgid "QUIC concurrent bidirectional streams"
 msgstr "Макс. количество одновременных двунаправленных потоков QUIC"
+
+msgid "Keep Alive"
+msgstr "Поддержание соединения"
 
 msgid "QUIC KeepAlive interval"
 msgstr "Интервал QUIC KeepAlive"
@@ -1370,6 +1376,9 @@ msgstr "Используется, если в ссылке на узел это�
 msgid "%s Node Use Type"
 msgstr "Тип использования сервера %s"
 
+msgid "Other"
+msgstr "Другие"
+
 msgid "UDP relay mode"
 msgstr "Режим ретрансляции UDP"
 
@@ -1585,12 +1594,6 @@ msgstr "Макс. параллельных соединений XUDP"
 
 msgid "Padding"
 msgstr "Заполнение"
-
-msgid "Enable early data"
-msgstr "Включить 0-RTT данные"
-
-msgid "Early data length"
-msgstr "Макс. длина 0-RTT данных"
 
 msgid "Early data header name"
 msgstr "Имя HTTP-заголовка для 0-RTT"
@@ -2609,6 +2612,12 @@ msgstr "Преобразование подписки: узел Snell %s про�
 
 msgid "Subscription conversion: discard Snell node %s, Sing-Box does not support Snell versions below 4."
 msgstr "Преобразование подписки: узел Snell %s пропущен, Sing-Box не поддерживает версии Snell ниже 4."
+
+msgid "Subscription conversion: discard WireGuard node %s, the current core does not support AmneziaWG."
+msgstr "Преобразование подписки: узел WireGuard %s пропущен, текущее ядро не поддерживает AmneziaWG."
+
+msgid "Subscription conversion: discard MASQUE node %s, the current core does not support h3-l4proxy transport."
+msgstr "Преобразование подписки: узел MASQUE %s пропущен, текущее ядро не поддерживает транспорт h3-l4proxy."
 
 msgid "Subscription conversion: skip a malformed node."
 msgstr "Преобразование подписки: узел с неполным форматом пропущен."
