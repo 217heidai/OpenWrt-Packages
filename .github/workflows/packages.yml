@@ -11,15 +11,15 @@ env:
 
 jobs:
   Update_OpenWrt_Packages:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(matrix.info).RUNNER }}
     
     strategy:
       fail-fast: false
       matrix:
         info:
-          - '{ "BRANCH": "openwrt-25.12"}'
-          - '{ "BRANCH": "openwrt-24.10"}'
-          - '{ "BRANCH": "openwrt-23.05"}'
+          - '{ "BRANCH": "openwrt-25.12", "RUNNER": "ubuntu-latest"}'
+          - '{ "BRANCH": "openwrt-24.10", "RUNNER": "ubuntu-latest"}'
+          - '{ "BRANCH": "openwrt-23.05", "RUNNER": "ubuntu-24.04"}'
 
     steps:
       - name: Checkout Repo
