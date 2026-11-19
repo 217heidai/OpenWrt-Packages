@@ -86,6 +86,7 @@ local DEFAULT_TROJAN_TYPE =  api.get_core("trojan_type", {{has_singbox,"sing-box
 local DEFAULT_VMESS_TYPE = api.get_core("vmess_type", {{has_xray,"xray"},{has_singbox,"sing-box"}})
 local DEFAULT_VLESS_TYPE = api.get_core("vless_type", {{has_xray,"xray"},{has_singbox,"sing-box"}})
 local DEFAULT_HYSTERIA2_TYPE = api.get_core("hysteria2_type", {{has_hysteria2,"hysteria2"},{has_singbox,"sing-box"},{has_xray,"xray"}})
+local DEFAULT_OTHER_TYPE = api.get_core("other_type", {{has_singbox,"sing-box"},{has_xray,"xray"}})
 local core_has = {
 	["xray"] = has_xray,
 	["sing-box"] = has_singbox,
@@ -245,6 +246,7 @@ do
 	if true then
 		local i = 0
 		local option = "lbss"
+		local usedNodes = {}
 		local function is_ip_port(str)
 			if type(str) ~= "string" then return false end
 			local ip, port = str:match("^([%d%.]+):(%d+)$")
@@ -253,9 +255,13 @@ do
 		uci_foreach("haproxy_config", function(t)
 			i = i + 1
 			local node_id = t[option]
+			-- 同一监听端口共用已选节点记录，避免多个后端替换成同一节点。
+			local port = t.haproxy_port or ""
+			usedNodes[port] = usedNodes[port] or {}
 			CONFIG[#CONFIG + 1] = {
 				log = true,
 				id = t[".name"],
+				usedNodes = usedNodes[port],
 				remarks = "HAProxy负载均衡节点列表[" .. i .. "]",
 				currentNode = node_id and uci_get(node_id) or nil,
 				set = function(o, server)
@@ -569,6 +575,7 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 	local sub_vmess_type = DEFAULT_VMESS_TYPE
 	local sub_vless_type = DEFAULT_VLESS_TYPE
 	local sub_hysteria2_type = DEFAULT_HYSTERIA2_TYPE
+	local sub_other_type = DEFAULT_OTHER_TYPE
 	local sub_hy_up_mbps, sub_hy_down_mbps = 1000, 1000
 	if sub_cfg then
 		if sub_cfg.allowInsecure and sub_cfg.allowInsecure ~= "1" then
@@ -593,6 +600,10 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 		local hysteria2_type = sub_cfg.hysteria2_type or "global"
 		if hysteria2_type ~= "global" and core_has[hysteria2_type] then
 			sub_hysteria2_type = hysteria2_type
+		end
+		local other_type = sub_cfg.other_type or "global"
+		if other_type ~= "global" and core_has[other_type] then
+			sub_other_type = other_type
 		end
 		sub_hy_up_mbps = sub_cfg.hysteria_up_mbps
 		sub_hy_down_mbps = sub_cfg.hysteria_down_mbps
@@ -1664,6 +1675,187 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 			result.snell_mode = params.mode or "default"
 		end
 		result.snell_reuse = (params.reuse == "1") and "1" or "0"
+	elseif szType == "wireguard" then
+		-- wireguard://<客户端私钥>@<服务器>:<端口>?publicKey=<服务器公钥>&address=<客户端地址>&mtu=1420&persistent-keepalive=25#节点名
+		if sub_other_type == "sing-box" and has_singbox then
+			result.type = "sing-box"
+		elseif sub_other_type == "xray" and has_xray then
+			result.type = "Xray"
+		else
+			log("跳过 WireGuard 节点，因未安装 WireGuard 核心程序 Xray 或 Sing-box。")
+			return nil
+		end
+		result.protocol = "wireguard"
+
+		local alias = ""
+		if content:find("#") then
+			local idx_sp = content:find("#")
+			alias = content:sub(idx_sp + 1, -1)
+			content = content:sub(0, idx_sp - 1)
+		end
+		result.remarks = UrlDecode(alias)
+		local contents = split(content, "@")
+		result.wireguard_secret_key = UrlDecode(contents[1]:gsub("%+", "%%2B"))
+		local query = split(contents[2], "%?")
+		local host_port = query[1]
+		local params = {}
+		for _, v in pairs(split(query[2], '&')) do
+			local s = v:find("=", 1, true)
+			if s and s > 1 then
+				params[UrlDecode(v:sub(1, s - 1)):lower()] = UrlDecode(v:sub(s + 1):gsub("%+", "%%2B"))
+			end
+		end
+		result.address, result.port = parse_host_port(host_port, "51820")
+		result.wireguard_public_key = params.publickey
+		result.wireguard_preSharedKey = params.presharedkey
+		result.wireguard_local_address = {}
+		for value in ((params.address or params.ip or "") .. "," .. (params.ipv6 or "")):gmatch("[^,%s]+") do
+			result.wireguard_local_address[#result.wireguard_local_address + 1] = value
+		end
+		result.wireguard_reserved = params.reserved
+		result.wireguard_mtu = params.mtu or "1420"
+		result.wireguard_keepAlive = params["persistent-keepalive"] or params.keepalive or "0"
+		result.use_finalmask = (params.fm and params.fm ~= "") and "1" or nil
+		result.finalmask = (params.fm and params.fm ~= "") and api.base64Encode(params.fm) or nil
+	elseif szType == "socks" or szType == "socks5" or szType == "socks5h" or szType == "http" or szType == "https" then
+		if sub_other_type == "sing-box" and has_singbox then
+			result.type = "sing-box"
+		elseif sub_other_type == "xray" and has_xray then
+			result.type = "Xray"
+		else
+			log("跳过 " .. szType .. " 节点，因未安装 " .. szType .. " 核心程序 Xray 或 Sing-box。")
+			return nil
+		end
+		result.protocol = (szType == "http" or szType == "https") and "http" or "socks"
+
+		local alias = ""
+		if content:find("#") then
+			local idx_sp = content:find("#")
+			alias = content:sub(idx_sp + 1, -1)
+			content = content:sub(0, idx_sp - 1)
+		end
+		result.remarks = UrlDecode(alias)
+		local query = split(content, "%?")
+		local Info = query[1]
+		local base64_auth = false
+		if result.protocol == "socks" and not Info:find("@", 1, true) and not Info:find(":", 1, true) then
+			Info = base64Decode(UrlDecode(Info:gsub("%+", "%%2B")))
+			base64_auth = true
+		end
+		local auth, host_port = Info:match("^(.*)@(.*)$")
+		host_port = host_port or Info
+		auth = auth or ""
+		if result.protocol == "socks" and not auth:find(":", 1, true) then
+			auth = base64Decode(UrlDecode(auth:gsub("%+", "%%2B")))
+			base64_auth = true
+		end
+		local idx = auth:find(":", 1, true)
+		result.username = idx and auth:sub(1, idx - 1) or auth
+		result.password = idx and auth:sub(idx + 1) or ""
+		if not base64_auth then
+			result.username = UrlDecode(result.username:gsub("%+", "%%2B"))
+			result.password = UrlDecode(result.password:gsub("%+", "%%2B"))
+		end
+		local params = {}
+		for _, v in pairs(split(query[2], '&')) do
+			local s = v:find("=", 1, true)
+			if s and s > 1 then
+				params[UrlDecode(v:sub(1, s - 1)):lower()] = UrlDecode(v:sub(s + 1):gsub("%+", "%%2B"))
+			end
+		end
+		local port = result.protocol == "socks" and "1080" or (szType == "https" and "443" or "80")
+		result.address, result.port = parse_host_port(host_port, port)
+		result.transport = result.type == "Xray" and "raw" or "tcp"
+		result.uot = params.uot
+		result.tcp_fast_open = params.tfo
+		result.tls = szType == "https" and "1" or "0"
+		if result.tls == "1" then
+			result.tls_serverName = params.sni
+			result.alpn = params.alpn
+			local insecure = params.allowinsecure or params.insecure or params.allow_insecure
+			result.tls_allowInsecure = (insecure == "1" or insecure == "0") and insecure or (sub_allowinsecure and "1" or "0")
+			result.tls_pinSHA256 = params.pcs
+			result.tls_CertByName = params.vcn
+			if params.fp and params.fp ~= "" then
+				result.utls = "1"
+				result.fingerprint = params.fp
+			end
+			if params.ech and params.ech ~= "" then
+				result.ech = "1"
+				result.ech_config = params.ech
+			end
+		end
+	elseif szType == "masque" then
+		-- masque://<私钥>@<服务器>:<端口>?publickey=<公钥>&address=<地址列表>&alpn=h3&sni=<SNI>#名称
+		local alias = ""
+		if content:find("#") then
+			local idx_sp = content:find("#")
+			alias = content:sub(idx_sp + 1, -1)
+			content = content:sub(0, idx_sp - 1)
+		end
+		result.remarks = UrlDecode(alias)
+		local query = split(content, "%?")
+		local auth, host_port = query[1]:match("^(.-)@(.*)$")
+		host_port = host_port or query[1]
+		auth = auth or ""
+		local params = {}
+		for _, v in pairs(split(query[2], '&')) do
+			local s = v:find("=", 1, true)
+			if s and s > 1 then
+				params[UrlDecode(v:sub(1, s - 1)):lower()] = UrlDecode(v:sub(s + 1):gsub("%+", "%%2B"))
+			end
+		end
+		local public_key = params.publickey or params['public-key'] or params.public_key
+		local warp = public_key and public_key ~= ""
+		local alpn = params.alpn or params.vhttp or params.network or "h3"
+		local use_xray = warp or alpn == "h2" or (params.fm and params.fm ~= "")
+		if (use_xray or sub_other_type == "xray") and has_xray then
+			result.type = "Xray"
+		elseif not use_xray and sub_other_type == "sing-box" and has_singbox then
+			result.type = "sing-box"
+		else
+			log("跳过 " .. szType .. " 节点，因未安装 " .. szType .. " 核心程序 Xray 或 Sing-box。")
+			return nil
+		end
+		result.protocol = "masque"
+		result.address, result.port = parse_host_port(host_port, "443")
+		local idx = auth:find(":", 1, true)
+		result.username = not warp and UrlDecode((idx and auth:sub(1, idx - 1) or auth):gsub("%+", "%%2B")) or nil
+		result.password = not warp and idx and UrlDecode(auth:sub(idx + 1):gsub("%+", "%%2B")) or nil
+		result.masque_path = params.path
+		result.tls_serverName = params.sni
+		result.tls_pinSHA256 = params.pcs
+		if params.ech and params.ech ~= "" then
+			result.ech = "1"
+			result.ech_config = params.ech
+		end
+		local headers = params.headers and jsonParse(params.headers) or {}
+		local lines = {}
+		for key, value in pairs(headers) do
+			if key:lower() == "user-agent" then result.user_agent = value
+			else lines[#lines + 1] = key .. ": " .. value end
+		end
+		result.masque_headers = table.concat(lines, "\\n")
+		if result.type == "Xray" then
+			result.masque_warp = warp and "1" or "0"
+			if warp then
+				local private_key = params.privatekey or params['private-key'] or params.private_key or UrlDecode(auth:gsub("%+", "%%2B"))
+				result.masque_warp_private_key = private_key:gsub("\r\n?", "\n"):gsub("\n", "\\n")
+				result.masque_warp_public_key = public_key:gsub("\r\n?", "\n"):gsub("\n", "\\n")
+				result.masque_warp_address = {}
+				for value in ((params.address or params.ip or "") .. "," .. (params.ipv6 or "")):gmatch("[^,%s]+") do
+					result.masque_warp_address[#result.masque_warp_address + 1] = value
+				end
+			end
+			result.alpn = alpn
+			result.tls_CertByName = params.vcn
+			result.use_finalmask = (params.fm and params.fm ~= "") and "1" or nil
+			result.finalmask = (params.fm and params.fm ~= "") and api.base64Encode(params.fm) or nil
+		else
+			local insecure = params.allowinsecure or params.insecure
+			result.tls_allowInsecure = (insecure == "1" or insecure == "0") and insecure or (sub_allowinsecure and "1" or "0")
+			result.tls_disable_sni = params.disable_sni
+		end
 	else
 		log("暂时不支持 " .. szType .. " 类型的节点订阅，跳过此节点。")
 		return nil
@@ -1774,6 +1966,20 @@ end
 local function select_node(nodes, config, parentConfig)
 	if config.currentNode then
 		local server
+		if parentConfig and not parentConfig.usedNodes then parentConfig.usedNodes = {} end
+		local usedNodes = parentConfig and parentConfig.usedNodes or config.usedNodes
+		local current_id = config.currentNode[".name"] or config.currentNode.Socks
+		-- 已用于替换其他旧节点的候选节点，不再参与本列表的匹配。
+		if usedNodes then
+			local available_nodes = {}
+			for _, node in pairs(nodes) do
+				local used_by = usedNodes[node[".name"]]
+				if not used_by or used_by == current_id then
+					available_nodes[#available_nodes + 1] = node
+				end
+			end
+			nodes = available_nodes
+		end
 		-- 全局节点、acl节点、负载均衡、urltest中的 (Socks [端口]) 节点保持原id
 		if config.currentNode["Socks"] then
 			server = config.currentNode.Socks
@@ -1870,7 +2076,7 @@ local function select_node(nodes, config, parentConfig)
 				end
 			end
 		end
-		if not parentConfig then
+		if not parentConfig and not usedNodes then
 			-- 还不行 随便找一个
 			if not server then
 				if #nodes_table > 0 then
@@ -1882,11 +2088,15 @@ local function select_node(nodes, config, parentConfig)
 			end
 		end
 		if server then
+			if usedNodes then usedNodes[server] = current_id end
 			if parentConfig then
 				config.set(parentConfig, server)
 			else
 				config.set(config, server)
 			end
+		elseif usedNodes and config.delete then
+			-- HAProxy 没有剩余匹配节点时，删除失效引用。
+			config.delete(config)
 		end
 	else
 		if not parentConfig then

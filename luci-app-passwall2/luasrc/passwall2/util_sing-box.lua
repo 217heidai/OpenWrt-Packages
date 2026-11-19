@@ -366,9 +366,26 @@ function gen_outbound(flag, node, tag, proxy_table)
 					Host = node.ws_host,
 					["User-Agent"] = node.user_agent
 				} or nil,
-				max_early_data = tonumber(node.ws_maxEarlyData) or nil,
-				early_data_header_name = (node.ws_earlyDataHeaderName) and node.ws_earlyDataHeaderName or nil -- For compatibility with Xray-core, set it to Sec-WebSocket-Protocol. It needs to be consistent with the server.
 			}
+			local path, query = (node.ws_path or "/"):match("^(.-)%?(.*)$")
+			local params, query_params = {}, {}
+			for v in (query or ""):gmatch("[^&]+") do
+				local t = api.split(api.UrlDecode(v), '=')
+				params[t[1]] = t[2]
+				if t[1] ~= "ed" and t[1] ~= "eh" then
+					table.insert(query_params, v)
+				end
+			end
+			local ed = tonumber(params.ed)
+			if ed then
+				-- Consume early-data options while preserving the remaining query.
+				v2ray_transport.path = path
+				if #query_params > 0 then
+					v2ray_transport.path = path .. "?" .. table.concat(query_params, "&")
+				end
+				v2ray_transport.max_early_data = ed
+			end
+			v2ray_transport.early_data_header_name = params.eh or "Sec-WebSocket-Protocol"
 		end
 
 		if node.transport == "httpupgrade" then
@@ -506,6 +523,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 				pre_shared_key = node.wireguard_preSharedKey,
 				reserved = node.wireguard_reserved,
 				mtu = tonumber(node.wireguard_mtu),
+				persistent_keepalive_interval = tonumber(node.wireguard_keepAlive),
 			}
 		end
 
@@ -822,7 +840,7 @@ function gen_config_server(node)
 			type = "ws",
 			path = node.ws_path or "/",
 			headers = (node.ws_host ~= nil) and { Host = node.ws_host } or nil,
-			early_data_header_name = (node.ws_earlyDataHeaderName) and node.ws_earlyDataHeaderName or nil -- For compatibility with Xray-core, set it to Sec-WebSocket-Protocol. It needs to be consistent with the server.
+			early_data_header_name = (node.ws_earlyDataHeaderName) and node.ws_earlyDataHeaderName or "Sec-WebSocket-Protocol"
 		}
 	end
 
@@ -1454,22 +1472,24 @@ function gen_config(var)
 				ut_nodes = _node.urltest_node
 			end
 			local valid_nodes = {}
+			local valid_node_tags = {}
 			for i = 1, #(ut_nodes or {}) do
 				local ut_node_id = ut_nodes[i]
 				local ut_node_tag = "ut-" .. ut_node_id
-				local is_new_ut_node = true
+				local outboundTag
 				for _, outbound in ipairs(outbounds) do
 					if string.sub(outbound.tag, 1, #ut_node_tag) == ut_node_tag then
-						is_new_ut_node = false
-						valid_nodes[#valid_nodes + 1] = outbound.tag
+						outboundTag = outbound.tag
 						break
 					end
 				end
-				if is_new_ut_node then
-					local outboundTag = gen_outbound_get_tag(flag, ut_node_id, ut_node_tag, { fragment = singbox_settings.fragment == "1" or nil, record_fragment = singbox_settings.record_fragment == "1" or nil })
-					if outboundTag then
-						valid_nodes[#valid_nodes + 1] = outboundTag
-					end
+				if not outboundTag then
+					outboundTag = gen_outbound_get_tag(flag, ut_node_id, ut_node_tag, { fragment = singbox_settings.fragment == "1" or nil, record_fragment = singbox_settings.record_fragment == "1" or nil })
+				end
+				-- Keep URLTest member tags unique, including reused outbounds.
+				if outboundTag and not valid_node_tags[outboundTag] then
+					valid_node_tags[outboundTag] = true
+					valid_nodes[#valid_nodes + 1] = outboundTag
 				end
 			end
 			if #valid_nodes == 0 then return nil end
@@ -2382,7 +2402,8 @@ function gen_config(var)
 								port = value.server_port,
 								public_key = value.peer_public_key,
 								pre_shared_key = value.pre_shared_key,
-								allowed_ips = {"0.0.0.0/0"},
+								allowed_ips = {"0.0.0.0/0", "::/0"},
+								persistent_keepalive_interval = value.persistent_keepalive_interval,
 								reserved = value.reserved
 							}
 						},

@@ -12,7 +12,7 @@ local GLOBAL = {
 
 local xray_version = api.get_app_version("xray")
 
-local xray_min_version = "26.7.11"
+local xray_min_version = "26.9.9"
 
 local function get_domain_excluded()
 	local path = string.format("/etc/%s/rules/domains_excluded", api.c_config)
@@ -355,6 +355,30 @@ function gen_outbound(flag, node, tag, proxy_table)
 								}
 							}
 							udp[#udp+1] = r
+						elseif node.hysteria2_hop and node.hysteria2_hop ~= "" then
+							udp[#udp+1] = {
+								type = "udphop",
+								settings = {
+									mode = "intervallocal,intervalremote",
+									remotePorts = string.gsub(node.hysteria2_hop, ":", "-"),
+									interval = (function(v)
+										if not v then return 30 end
+										if v:find("-", 1, true) then
+											local min, max = v:match("^(%d+)%-(%d+)$")
+											min = tonumber(min)
+											max = tonumber(max)
+											if min and max then
+												min = (min >= 5) and min or 5
+												max = (max >= min) and max or min
+												return min .. "-" .. max
+											end
+											return 30
+										end
+										v = tonumber((v or "30"):match("^%d+"))
+										return (v and v >= 5) and v or 30
+									end)(node.hysteria2_hop_interval)
+								}
+							}
 						end
 						finalmask.udp = udp
 						local up = tonumber(node.hysteria2_up_mbps) or 0
@@ -363,25 +387,6 @@ function gen_outbound(flag, node, tag, proxy_table)
 							congestion = (up <= 0 and down <= 0) and "bbr" or "brutal",
 							brutalUp = up > 0 and (up .. "mbps") or nil,
 							brutalDown = down > 0 and (down .. "mbps") or nil,
-							udpHop = (node.hysteria2_hop) and {
-								ports = string.gsub(node.hysteria2_hop, ":", "-"),
-								interval = (function(v)
-									if not v then return 30 end
-									if v:find("-", 1, true) then
-										local min, max = v:match("^(%d+)%-(%d+)$")
-										min = tonumber(min)
-										max = tonumber(max)
-										if min and max then
-											min = (min >= 5) and min or 5
-											max = (max >= min) and max or min
-											return min .. "-" .. max
-										end
-										return 30
-									end
-									v = tonumber((v or "30"):match("^%d+"))
-									return (v and v >= 5) and v or 30
-								end)(node.hysteria2_hop_interval)
-							} or nil,
 							maxIdleTimeout = (function(t)
 								t = tonumber(tostring(t or "30"):match("^%d+"))
 								return (t and t >= 4 and t <= 120) and t or 30
@@ -431,7 +436,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 				peers = (node.protocol == "wireguard") and {
 					{
 						publicKey = node.wireguard_public_key,
-						endpoint = node.address .. ":" .. node.port,
+						endpoint = (api.is_ipv6(node.address) and ("[" .. node.address .. "]") or node.address) .. ":" .. node.port,
 						preSharedKey = node.wireguard_preSharedKey,
 						keepAlive = node.wireguard_keepAlive and tonumber(node.wireguard_keepAlive) or nil
 					}
@@ -1151,22 +1156,24 @@ function gen_config(var)
 			end
 
 			local valid_nodes = {}
+			local valid_node_tags = {}
 			for i = 1, #(blc_nodes or {}) do
 				local blc_node_id = blc_nodes[i]
 				local blc_node_tag = "blc-" .. blc_node_id
-				local is_new_blc_node = true
+				local outboundTag
 				for _, outbound in ipairs(outbounds) do
 					if string.sub(outbound.tag, 1, #blc_node_tag) == blc_node_tag then
-						is_new_blc_node = false
-						valid_nodes[#valid_nodes + 1] = outbound.tag
+						outboundTag = outbound.tag
 						break
 					end
 				end
-				if is_new_blc_node then
-					local outboundTag = gen_outbound_get_tag(flag, blc_node_id, blc_node_tag, { fragment = xray_settings.fragment == "1" or nil, noise = xray_settings.noise == "1" or nil })
-					if outboundTag then
-						valid_nodes[#valid_nodes + 1] = outboundTag
-					end
+				if not outboundTag then
+					outboundTag = gen_outbound_get_tag(flag, blc_node_id, blc_node_tag, { fragment = xray_settings.fragment == "1" or nil, noise = xray_settings.noise == "1" or nil })
+				end
+				-- 每个成员标签只保留一次，复用已有出站时也需要去重。
+				if outboundTag and not valid_node_tags[outboundTag] then
+					valid_node_tags[outboundTag] = true
+					valid_nodes[#valid_nodes + 1] = outboundTag
 				end
 				-- Check if balancing node duplicates fallback node
 				if _node.fallback_node == blc_node_id then
