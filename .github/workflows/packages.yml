@@ -12,6 +12,10 @@ env:
 jobs:
   Update_OpenWrt_Packages:
     runs-on: ${{ fromJSON(matrix.info).RUNNER }}
+    # 同分支的运行排队执行，避免两次运行同时改同一个版本分支、后提交的 push 失败
+    concurrency:
+      group: packages-${{ fromJSON(matrix.info).BRANCH }}
+      cancel-in-progress: false
     
     strategy:
       fail-fast: false
@@ -34,8 +38,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y coreutils
           sudo timedatectl set-timezone "$TZ"
           python -m pip install --upgrade pip
           pip install -U GitPython
@@ -44,8 +46,8 @@ jobs:
         id: update
         run: |
           python packages.py
-          rm -rf __pycache__
-          echo "message=$(date)" >> $GITHUB_OUTPUT
+          CHANGED=$(git status --porcelain | awk '{print $2}' | cut -d/ -f1 | sort -u | paste -sd "," -)
+          echo "message=$(date)${CHANGED:+ 更新: $CHANGED}" >> "$GITHUB_OUTPUT"
 
       - name: Verify Feed (SDK Build)
         if: steps.update.outcome == 'success'
@@ -60,9 +62,11 @@ jobs:
           [ -n "$SERIES" ] || { echo "!! 未找到 $VER 系列 release"; exit 1; }
           echo "SDK series: $SERIES"
           SDK_FILE="$(curl -fsSL "$BASE/$SERIES/targets/x86/64/" | grep -oE 'href="immortalwrt-sdk-[^"]+\.tar\.(xz|zst)"' | sed 's/href="//;s/"//' | sort -V | tail -1)"
-          [ -n "$SDK_FILE" ] || { echo "!! 未找到 $SERIES 的 x86/64 SDK"; exit 1; }
+          # SDK 还没发布（如新版本刚出、x86 目标未传完）不是 feed 的问题：跳过验证、照常提交，
+          # 下轮定时任务再验证；不要用 exit 1 堵住同步（见 #2220：24.10.7 x86 404 导致整轮白跑）
+          if [ -z "$SDK_FILE" ]; then echo "!! $SERIES 的 x86/64 SDK 尚未发布，跳过验证"; exit 0; fi
           echo "SDK file: $SDK_FILE"
-          curl -fsSL -o "$SDK_FILE" "$BASE/$SERIES/targets/x86/64/$SDK_FILE"
+          curl -fsSL --retry 3 -o "$SDK_FILE" "$BASE/$SERIES/targets/x86/64/$SDK_FILE"
           # 解压到工作区外（$RUNNER_TEMP）：src-link 指向 $GITHUB_WORKSPACE，
           # 若 SDK 在工作区内会形成文件系统环（File system loop），导致包扫描失败
           rm -rf "$RUNNER_TEMP/sdk"
@@ -95,6 +99,8 @@ jobs:
           # 不用 luci-app-smartdns：其依赖链（luci-base 全家桶 + 官方 smartdns）在 SDK 精简环境下误报率高
           make -j"$(nproc)" package/tcping/compile
           make -j"$(nproc)" package/mosdns/compile
+          # 再编 xray-core：验证 25.12 的 golang1.27 补丁真实可用（光替换字符串不够）
+          make -j"$(nproc)" package/xray-core/compile
           # 清理 SDK 临时目录
           rm -rf "$RUNNER_TEMP/sdk"
 
@@ -108,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete workflow runs
-        uses: Mattraks/delete-workflow-runs@main
+        uses: Mattraks/delete-workflow-runs@0cf693bc9909e5e867ee8f27b813224ba862939c # 2026-11-23 的 main
         with:
           retain_days: 0
           keep_minimum_runs: 2
