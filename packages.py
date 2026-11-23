@@ -15,7 +15,6 @@ class PACKAGE(object):
         self.function = l[3]
         self.type = l[4]
         self.date = l[5]
-        self.isUpdate = False
 
     def __Download(self, repo, path):
         def gitlog(log):
@@ -63,8 +62,10 @@ class PACKAGE(object):
         if os.path.exists(tmp):
             shutil.rmtree(tmp)
         
-        self.date = self.__Download(self.repo, tmp)
-        if self.date is None:
+        # 新日期先放局部变量：只有目录真正替换成功后才写回 self.date，
+        # 任何中途返回都保留 README 里的旧日期
+        new_date = self.__Download(self.repo, tmp)
+        if new_date is None:
             # B3: 拉取/切换失败，保留旧目录与旧日期，避免产生缺包提交
             print("!! %s: 拉取失败，保留旧版本" % self.name)
             return
@@ -72,6 +73,10 @@ class PACKAGE(object):
         if self.type == 'multi':
             if self.name == 'luci-app-store': # 特殊处理
                 tmp += '/luci'
+            if not os.path.isdir(tmp):
+                # 上游目录结构异常（目录不存在），保留旧目录
+                print("!! %s: 上游目录不存在，保留旧版本" % self.name)
+                return
             dirList = self.__ListDir(tmp)
         else:
             self.__RemoveDir(tmp)
@@ -87,6 +92,7 @@ class PACKAGE(object):
             if os.path.exists(package):
                 shutil.rmtree(package)
             shutil.move(dir, path + '/')
+        self.date = new_date
         '''
         # 重命名 quectel_cm_5G，解决编译问题
         if os.path.exists(path + '/quectel_cm_5G'):
@@ -101,7 +107,7 @@ def GetPackageList(fileName):
             line = line.replace('\r', '').replace('\n', '')
             if line.find('|')==0 and line.rfind('|')==len(line)-1:
                 l = list(map(lambda x: x.strip(), line[1:].split('|')))
-                if l[0].find('(') > 0 and l[0].find(')') > 0 and len(l) > 4:
+                if l[0].find('(') > 0 and l[0].find(')') > 0 and len(l) > 5:
                     url = l[0][l[0].find('(')+1:l[0].find(')')]
                     matchObj1 = re.match(r'(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?', url)
                     if matchObj1:
@@ -111,10 +117,10 @@ def GetPackageList(fileName):
 def CreatReadme(fileName, packageList):
     # B1: feed 引用章节中的仓库地址，CI 环境下自动填充为真实仓库
     repo = os.environ.get('GITHUB_REPOSITORY', 'YOUR_GITHUB_USERNAME/OpenWrt-Packages')
-    if os.path.exists(fileName):
-        os.remove(fileName)
-    
-    with open(fileName, 'a') as f:
+    # 先写临时文件再原子替换：中途失败不会留下一个删了一半的 README
+    #（README 既是输出也是下轮的包清单输入，坏了会丢包）
+    tmpName = fileName + '.tmp'
+    with open(tmpName, 'w') as f:
         f.write("# OpenWrt-Packages\n")
         f.write("常用 ImmortalWrt 软件包收集\n")
         f.write("\n")
@@ -148,6 +154,7 @@ def CreatReadme(fileName, packageList):
         f.write("|:-|:-|:-|:-|:-|:-|\n")
         for package in packageList:
             f.write("|[%s](%s)|%s|%s|%s|%s|%s|\n"%(package.name, package.repo[:-4], package.branch, package.developer, package.function, package.type, package.date))
+    os.replace(tmpName, fileName)
     
 
 
