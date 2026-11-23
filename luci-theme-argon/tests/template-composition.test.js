@@ -75,6 +75,28 @@ test('stylesheet URLs track source rebuilds and preserved timestamps on applicat
 	} finally { renderer.close(); }
 });
 
+test('admin pages reuse the login wallpaper layer only when enabled', () => {
+	const renderer = createRenderer(templates);
+	try {
+		const off = renderer.render('application', { backgrounds: ['photo.jpg'] }).html;
+		assert.doesNotMatch(off, /argon-wallpaper|class="main-bg|<video/);
+		const on = renderer.render('application', { settings: { main_background: '1' }, backgrounds: ['photo.jpg'] }).html;
+		assert.match(on, /argon-wallpaper/);
+		assert.match(on, /class="main-bg argon-background-media"/);
+		const solid = renderer.render('application', { settings: { main_background: '1', main_glass: '0' }, backgrounds: ['photo.jpg'] }).html;
+		assert.doesNotMatch(solid, /argon-wallpaper|class="main-bg/);
+		assert.match(on, /photo\.jpg/);
+		assert.ok(on.indexOf('skip-link') < on.indexOf('class="main-bg'));
+		const video = renderer.render('application', { settings: { main_background: '1' }, backgrounds: ['clip.mp4'] }).html;
+		assert.match(video, /<video loop muted playsinline id="video"/);
+		assert.match(video, /class="video argon-background-media"/);
+		assert.match(video, /class="background-controls argon-background-controls"/);
+		assert.match(video, /playback-control/);
+		assert.match(video, /volume-control mute/);
+		assert.ok(video.indexOf('skip-link') < video.indexOf('background-controls'));
+	} finally { renderer.close(); }
+});
+
 test('login partials retain image/video, branding and authentication scope and script order', () => {
 	const renderer = createRenderer(templates);
 	try {
@@ -99,11 +121,35 @@ test('login partials retain image/video, branding and authentication scope and s
 		assert.ok(html.indexOf('src="/auth-plugin.js"') < html.indexOf('input.focus()'));
 		const image = renderer.render('sysauth', { configExists: false, backgrounds: [] }).html;
 		assert.match(image, /data-login-style="classic"/);
-		assert.match(image, /class="main-bg"/);
+		assert.match(image, /class="main-bg argon-background-media"/);
 		assert.match(image, /img\/bg1.webp/);
 		assert.doesNotMatch(image, /<video/);
 		assert.match(image, /--dark-primary: #5a6cc5/);
 		assert.match(renderer.render('sysauth', { fuser: 'root' }).html, /Invalid username and\/or password/);
+	} finally { renderer.close(); }
+});
+
+test('anonymous login renders the alternate Bing image origin for old and new cache entries', () => {
+	const renderer = createRenderer(templates);
+	try {
+		const hosts = ['www.bing.com', 'cn.bing.com'];
+		const imagePath = '/th?id=Fixture_UHD.jpg&pid=hp';
+		for (const [index, host] of hosts.entries()) {
+			const { html } = renderer.render('sysauth', {
+				ctx: { path: [], request_path: [] },
+				settings: index === 0 ? { bing_background: '1' } : { online_wallpaper: 'bing' },
+				wallpaper: { url: 'https://' + host + imagePath }
+			});
+			assert.ok(html.includes('src="https://' + host + imagePath.replace('&', '&amp;') + '"'));
+			assert.ok(html.includes('data-mirror="https://' + hosts[1 - index] + imagePath.replace('&', '&amp;') + '"'));
+			assert.match(html, /data-fallback="\/luci-static\/argon\/img\/bg1\.webp"/);
+		}
+		const { html } = renderer.render('sysauth', {
+			settings: { online_wallpaper: 'unsplash' },
+			wallpaper: { url: 'https://images.unsplash.com/example.jpg' }
+		});
+		assert.match(html, /src="https:\/\/images\.unsplash\.com\/example\.jpg"/);
+		assert.doesNotMatch(html, /data-mirror=/);
 	} finally { renderer.close(); }
 });
 
